@@ -1,0 +1,8 @@
+# Godot generated files — these are auto-created by the editor and should never be committed
+.godot/
+*.translation
+*.import
+
+# OS-specific junk files
+.DS_Store
+Thumbs.db

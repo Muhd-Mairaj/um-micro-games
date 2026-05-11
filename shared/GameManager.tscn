@@ -1,0 +1,11 @@
+[gd_scene format=3 uid="uid://c7kn34pt570rd"]
+
+[ext_resource type="Script" uid="uid://cx3v0axw5l6pl" path="res://shared/GameManager.gd" id="1_8l50k"]
+[ext_resource type="PackedScene" uid="uid://cdik4iq37uuxe" path="res://shared/HUD.tscn" id="2_41yy7"]
+
+[node name="GameManager" type="Node" unique_id=1712732129]
+script = ExtResource("1_8l50k")
+
+[node name="HUD" parent="." unique_id=1273353250 instance=ExtResource("2_41yy7")]
+
+[node name="MiniGameContainer" type="Node2D" parent="." unique_id=516374847]
