@@ -69,13 +69,13 @@ specific UM faculty. Built in **Godot 4** using **GDScript**.
 - Verifies that `time_scale` progression feels right across the full run
 
 **Audio Lead (Yusrina)**
-- Sources royalty-free SFX and music (freesound.org, OpenGameArt)
-- Drops files into `assets/sfx/` and `assets/music/` using the exact filenames listed below
-- Required files — **do not rename these**:
-  - `assets/sfx/win.ogg`
-  - `assets/sfx/lose.ogg`
-  - `assets/sfx/tick.ogg`
-  - `assets/music/bg_loop.ogg`
+- A royalty-free sound pack is included in the repo under `400 Sounds Pack/` — browse it to find suitable sounds
+- Copy your chosen files into `assets/sfx/` and `assets/music/` and rename them to the required filenames below
+- Required filenames — **do not rename these** (code will reference them by name):
+  - `assets/sfx/win.wav`
+  - `assets/sfx/lose.wav`
+  - `assets/sfx/tick.wav`
+  - `assets/music/bg_loop.wav`
 
 ---
 
