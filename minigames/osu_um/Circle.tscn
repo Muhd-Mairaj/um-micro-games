@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://cn8awqkhcmn1n"]
+
+[ext_resource type="Script" uid="uid://6v3iaxb14s3i" path="res://minigames/osu_um/scripts/Circle.gd" id="1_uocnk"]
+
+[node name="Circle" type="ColorRect" unique_id=645587328]
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("1_uocnk")
