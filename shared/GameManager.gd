@@ -55,6 +55,8 @@ const RESULT_PAUSE_DURATION: float = 0.9
 # ---------------------------------------------------------------------------
 var minigame_scenes: Array[String] = [
 	"res://minigames/syntax_saviour/SyntaxSaviour.tscn",
+	"res://minigames/virus_scanner/VirusScanner.tscn",
+	"res://minigames/lab_explosion/LabExplosion.tscn",
 	# --- THE STITCHER ADDS LINES HERE IN WEEK 12 ---
 ]
 

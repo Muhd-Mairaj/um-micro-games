@@ -1,0 +1,247 @@
+[gd_scene format=3 uid="uid://bvuaerhlp87f8"]
+
+[ext_resource type="Script" uid="uid://doxwuhgdmnqrn" path="res://minigames/lab_explosion/LabExplosion.gd" id="1_glv2v"]
+[ext_resource type="Texture2D" uid="uid://d070p3lb5hxml" path="res://assets/assets_lab_explosion/lab_explosion_background.png" id="2_20pc6"]
+[ext_resource type="FontFile" uid="uid://bgopf88k1hnm1" path="res://assets/Font/LuckiestGuy-Regular.ttf" id="3_c6i3y"]
+[ext_resource type="Texture2D" uid="uid://di4gwqvuae6i1" path="res://assets/assets_lab_explosion/liquid/liquid1.png" id="5_c6i3y"]
+[ext_resource type="Texture2D" uid="uid://b51ub8x3bdx2c" path="res://assets/assets_lab_explosion/liquid/liquid2.png" id="6_c2ibq"]
+[ext_resource type="Texture2D" uid="uid://r0wgisb0yjkb" path="res://assets/assets_lab_explosion/liquid/liquid3.png" id="7_j4qnp"]
+[ext_resource type="Texture2D" uid="uid://cg0ebvf7wxck8" path="res://assets/assets_lab_explosion/liquid/liquid4.png" id="8_fpfj3"]
+[ext_resource type="Texture2D" uid="uid://d1edj5si7alp4" path="res://assets/assets_lab_explosion/liquid/liquid5.png" id="9_sc1dx"]
+[ext_resource type="Texture2D" uid="uid://bpoq27cig3mmg" path="res://assets/assets_lab_explosion/liquid/liquid6.png" id="10_kjvhd"]
+[ext_resource type="Texture2D" uid="uid://b6covl3nbwm16" path="res://assets/assets_lab_explosion/liquid/liquid7.png" id="11_5tuhn"]
+[ext_resource type="Texture2D" uid="uid://x57pvtxmrlop" path="res://assets/assets_lab_explosion/liquid/liquid8.png" id="12_2gh4u"]
+[ext_resource type="Texture2D" uid="uid://btklmfdd3qbqg" path="res://assets/assets_lab_explosion/explosion.png" id="13_c6i3y"]
+[ext_resource type="Texture2D" uid="uid://dgqlbb8n75qay" path="res://assets/assets_lab_explosion/liquid/liquid9.png" id="13_devvj"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_c6i3y"]
+bg_color = Color(1, 1, 1, 1)
+
+[sub_resource type="Theme" id="Theme_cm0pq"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_j4qnp"]
+bg_color = Color(0.15294118, 0.29803923, 0.2627451, 1)
+border_width_left = 5
+border_width_top = 4
+border_width_right = 5
+border_width_bottom = 6
+border_color = Color(0.8784314, 0.69411767, 0.50980395, 1)
+
+[node name="LabExplosion" type="Node2D" unique_id=1235387432]
+script = ExtResource("1_glv2v")
+
+[node name="Background" type="Sprite2D" parent="." unique_id=1241406094]
+position = Vector2(575, 325)
+scale = Vector2(0.6, 0.6)
+texture = ExtResource("2_20pc6")
+
+[node name="Explosion" type="Sprite2D" parent="." unique_id=1208753197]
+visible = false
+position = Vector2(575, 310)
+scale = Vector2(0.1, 0.1)
+texture = ExtResource("13_c6i3y")
+
+[node name="UI" type="CanvasLayer" parent="." unique_id=1205463177]
+
+[node name="TimerPanel" type="Panel" parent="UI" unique_id=2082351216]
+visible = false
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -56.0
+offset_top = 20.0
+offset_right = 84.0
+offset_bottom = 75.0
+grow_horizontal = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_c6i3y")
+
+[node name="TimerLabel" type="Label" parent="UI/TimerPanel" unique_id=1649619794]
+visible = false
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -24.0
+offset_top = 10.0
+offset_right = 16.0
+offset_bottom = 51.0
+grow_horizontal = 2
+theme_override_colors/font_color = Color(0.98039216, 0.16470589, 0.16470589, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = ExtResource("3_c6i3y")
+theme_override_font_sizes/font_size = 40
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Liquid1" type="Button" parent="UI" unique_id=476563908]
+custom_minimum_size = Vector2(32, 32)
+offset_left = 360.0
+offset_top = 450.0
+offset_right = 470.0
+offset_bottom = 560.0
+icon = ExtResource("5_c6i3y")
+flat = true
+icon_alignment = 1
+expand_icon = true
+
+[node name="Liquid2" type="Button" parent="UI" unique_id=828528520]
+offset_left = 200.0
+offset_top = 450.0
+offset_right = 310.0
+offset_bottom = 560.0
+icon = ExtResource("6_c2ibq")
+flat = true
+icon_alignment = 1
+expand_icon = true
+
+[node name="Liquid3" type="Button" parent="UI" unique_id=1802097829]
+offset_left = 680.0
+offset_top = 450.0
+offset_right = 800.0
+offset_bottom = 570.0
+icon = ExtResource("7_j4qnp")
+flat = true
+expand_icon = true
+
+[node name="Liquid4" type="Button" parent="UI" unique_id=1875230040]
+custom_minimum_size = Vector2(32, 32)
+offset_left = 280.0
+offset_top = 410.0
+offset_right = 390.0
+offset_bottom = 520.0
+icon = ExtResource("8_fpfj3")
+flat = true
+icon_alignment = 1
+expand_icon = true
+
+[node name="Liquid5" type="Button" parent="UI" unique_id=187779302]
+custom_minimum_size = Vector2(32, 32)
+offset_left = 440.0
+offset_top = 410.0
+offset_right = 550.0
+offset_bottom = 520.0
+icon = ExtResource("9_sc1dx")
+flat = true
+icon_alignment = 1
+expand_icon = true
+
+[node name="Liquid6" type="Button" parent="UI" unique_id=1306115184]
+custom_minimum_size = Vector2(32, 32)
+offset_left = 600.0
+offset_top = 410.0
+offset_right = 710.0
+offset_bottom = 520.0
+icon = ExtResource("10_kjvhd")
+flat = true
+icon_alignment = 1
+expand_icon = true
+
+[node name="Liquid7" type="Button" parent="UI" unique_id=2130533398]
+custom_minimum_size = Vector2(32, 32)
+offset_left = 520.0
+offset_top = 450.0
+offset_right = 630.0
+offset_bottom = 560.0
+icon = ExtResource("11_5tuhn")
+flat = true
+icon_alignment = 1
+expand_icon = true
+
+[node name="Liquid8" type="Button" parent="UI" unique_id=1264639031]
+custom_minimum_size = Vector2(32, 32)
+offset_left = 840.0
+offset_top = 450.0
+offset_right = 950.0
+offset_bottom = 560.0
+icon = ExtResource("12_2gh4u")
+flat = true
+icon_alignment = 1
+expand_icon = true
+
+[node name="Liquid9" type="Button" parent="UI" unique_id=1940467542]
+custom_minimum_size = Vector2(32, 32)
+offset_left = 760.0
+offset_top = 410.0
+offset_right = 870.0
+offset_bottom = 520.0
+icon = ExtResource("13_devvj")
+flat = true
+icon_alignment = 1
+expand_icon = true
+
+[node name="RecipePanel" type="Panel" parent="UI" unique_id=1818325972]
+clip_contents = true
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -264.0
+offset_top = -184.0
+offset_right = 286.0
+offset_bottom = 66.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = SubResource("Theme_cm0pq")
+theme_override_styles/panel = SubResource("StyleBoxFlat_j4qnp")
+
+[node name="Label" type="Label" parent="UI/RecipePanel" unique_id=804873301]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -245.0
+offset_top = 60.0
+offset_right = -129.0
+offset_bottom = 86.0
+grow_horizontal = 2
+theme_override_fonts/font = ExtResource("3_c6i3y")
+theme_override_font_sizes/font_size = 18
+text = "RECIPE :"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="LiquidContainer" type="HBoxContainer" parent="UI/RecipePanel" unique_id=779020547]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -149.5
+offset_top = -19.5
+offset_right = 150.5
+offset_bottom = 60.5
+grow_horizontal = 2
+grow_vertical = 2
+alignment = 2
+
+[node name="Instruction" type="Label" parent="UI/RecipePanel" unique_id=206441968]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -199.0
+offset_top = 20.0
+offset_right = 199.0
+offset_bottom = 46.0
+grow_horizontal = 2
+theme_override_fonts/font = ExtResource("3_c6i3y")
+theme_override_font_sizes/font_size = 25
+text = "Click all the ingredients needed"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="GameTimer" type="Timer" parent="." unique_id=1640101175]
+wait_time = 20.0
+one_shot = true
+
+[connection signal="pressed" from="UI/Liquid1" to="." method="_on_liquid1_pressed"]
+[connection signal="pressed" from="UI/Liquid2" to="." method="_on_liquid2_pressed"]
+[connection signal="pressed" from="UI/Liquid3" to="." method="_on_liquid3_pressed"]
+[connection signal="pressed" from="UI/Liquid4" to="." method="_on_liquid4_pressed"]
+[connection signal="pressed" from="UI/Liquid5" to="." method="_on_liquid5_pressed"]
+[connection signal="pressed" from="UI/Liquid6" to="." method="_on_liquid6_pressed"]
+[connection signal="pressed" from="UI/Liquid7" to="." method="_on_liquid7_pressed"]
+[connection signal="pressed" from="UI/Liquid8" to="." method="_on_liquid8_pressed"]
+[connection signal="pressed" from="UI/Liquid9" to="." method="_on_liquid9_pressed"]
