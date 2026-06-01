@@ -11,7 +11,7 @@
 [ext_resource type="Texture2D" uid="uid://bpoq27cig3mmg" path="res://assets/assets_lab_explosion/liquid/liquid6.png" id="10_kjvhd"]
 [ext_resource type="Texture2D" uid="uid://b6covl3nbwm16" path="res://assets/assets_lab_explosion/liquid/liquid7.png" id="11_5tuhn"]
 [ext_resource type="Texture2D" uid="uid://x57pvtxmrlop" path="res://assets/assets_lab_explosion/liquid/liquid8.png" id="12_2gh4u"]
-[ext_resource type="Texture2D" uid="uid://btklmfdd3qbqg" path="res://assets/assets_lab_explosion/explosion.png" id="13_c6i3y"]
+[ext_resource type="Texture2D" uid="uid://3d6v405un3n3" path="res://assets/assets_lab_explosion/explosion.png" id="13_c6i3y"]
 [ext_resource type="Texture2D" uid="uid://dgqlbb8n75qay" path="res://assets/assets_lab_explosion/liquid/liquid9.png" id="13_devvj"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_c6i3y"]
@@ -31,8 +31,8 @@ border_color = Color(0.8784314, 0.69411767, 0.50980395, 1)
 script = ExtResource("1_glv2v")
 
 [node name="Background" type="Sprite2D" parent="." unique_id=1241406094]
-position = Vector2(575, 325)
-scale = Vector2(0.6, 0.6)
+position = Vector2(577.5, 328)
+scale = Vector2(0.60260415, 0.60555565)
 texture = ExtResource("2_20pc6")
 
 [node name="Explosion" type="Sprite2D" parent="." unique_id=1208753197]

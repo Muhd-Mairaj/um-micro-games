@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://bvuaerhlp87f8"]
 
 [ext_resource type="Script" uid="uid://b7b6aebqhu31g" path="res://minigames/virus_scanner/VirusScanner.gd" id="1_glv2v"]
-[ext_resource type="Texture2D" uid="uid://dx0ulsqjlpf7r" path="res://assets/assets_virus_scanner/virus_scanner_background.png" id="2_fos0i"]
+[ext_resource type="Texture2D" uid="uid://cxdt8eru88r1n" path="res://assets/assets_virus_scanner/virus_scanner_background.png" id="2_fos0i"]
 [ext_resource type="FontFile" uid="uid://bgopf88k1hnm1" path="res://assets/Font/LuckiestGuy-Regular.ttf" id="3_c6i3y"]
 [ext_resource type="Texture2D" uid="uid://cnqe0erno3wur" path="res://assets/assets_virus_scanner/cell_background.png" id="3_cm0pq"]
 [ext_resource type="Texture2D" uid="uid://lae1jo3he30q" path="res://assets/assets_virus_scanner/virus.png" id="4_fos0i"]
@@ -18,8 +18,8 @@
 script = ExtResource("1_glv2v")
 
 [node name="Background" type="Sprite2D" parent="." unique_id=1241406094]
-position = Vector2(575, 325)
-scale = Vector2(0.6, 0.6)
+position = Vector2(588.6, 326.50003)
+scale = Vector2(0.916279, 0.8372396)
 texture = ExtResource("2_fos0i")
 
 [node name="Blackbox" type="Sprite2D" parent="." unique_id=1122209852]
