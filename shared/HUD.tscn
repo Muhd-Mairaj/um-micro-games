@@ -15,6 +15,19 @@ grow_vertical = 2
 [node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer" unique_id=1499857096]
 layout_mode = 2
 
+[node name="TopBar" type="HBoxContainer" parent="MarginContainer/VBoxContainer" unique_id=1537005812]
+layout_mode = 2
+
+[node name="LivesLabel" type="Label" parent="MarginContainer/VBoxContainer/TopBar" unique_id=472095049]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+
+[node name="ProgressLabel" type="Label" parent="MarginContainer/VBoxContainer/TopBar" unique_id=494831029]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 24
+horizontal_alignment = 2
+
 [node name="TimerBar" type="ProgressBar" parent="MarginContainer/VBoxContainer" unique_id=1741317314]
 custom_minimum_size = Vector2(0, 20)
 layout_mode = 2

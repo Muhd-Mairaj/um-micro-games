@@ -4,12 +4,15 @@
 > Read it fully before touching any file.
 
 A WarioWare-style micro-game collection set in Universiti Malaya (UM). Players chain through
-5–10 second mini-games back-to-back at increasing speed. Each mini-game is themed around a
-specific UM faculty. Built in **Godot 4** using **GDScript**.
+mini-games at increasing speed, each themed around a specific UM faculty. Built in **Godot 4**
+using **GDScript**.
 
+**Goal:** "Can You Graduate from UM?" — complete all 12 faculty mini-games with at least 1 life remaining.  
 **Win condition per mini-game:** Complete the task before the timer expires.  
-**Lose condition:** Time runs out or the player makes a fatal mistake.  
-**Progression:** Speed scales up every 3 games. All mini-games are shuffled each run.
+**Lose condition:** Time runs out or the player makes a fatal mistake — costs 1 life (♥).  
+**Lives:** Each run starts with 3 lives (♥♥♥). Reach 0 and you **Drop Out**.  
+**Progression:** Speed scales up every 3 games. All mini-games are shuffled each run.  
+**Endings:** Complete all 12 with lives remaining → Graduation ceremony + grade reveal (3♥ = First Class, 2♥ = Second Class Upper, 1♥ = Second Class Lower).
 
 ---
 
@@ -145,12 +148,14 @@ um-micro-games/
 │
 ├── shared/                          ← LEAD PROGRAMMER OWNS THIS. Do not edit without permission.
 │   ├── MiniGameBase.gd              ← Base class all mini-games extend
-│   ├── GameManager.gd               ← Sequencer: loads games, tracks speed/score
+│   ├── GameManager.gd               ← State machine: lives, progress, screen transitions
 │   ├── GameManager.tscn             ← Main scene (already set as startup scene)
-│   ├── HUD.tscn                     ← Timer bar + WIN/LOSE overlay
+│   ├── HUD.tscn                     ← Timer bar + lives + progress + WIN/LOSE overlay
 │   ├── HUD.gd
-│   ├── ResultScreen.tscn            ← End-of-run score screen
-│   └── ResultScreen.gd
+│   ├── TitleScreen.tscn / .gd       ← "Can You Graduate from UM?" splash
+│   ├── IntroScreen.tscn / .gd       ← 5-second run intro
+│   ├── DropOutScreen.tscn / .gd     ← Game-over screen (0 lives)
+│   └── GraduationScreen.tscn / .gd  ← Victory + grade reveal
 │
 ├── minigames/                       ← EACH MEMBER OWNS ONLY THEIR OWN SUBFOLDER
 │   ├── syntax_saviour/              ← Reference example — study this first
@@ -237,29 +242,39 @@ Every mini-game script must start with `extends MiniGameBase`. This gives your g
 | `win()` | method | Call this when the player succeeds. GameManager handles the rest. |
 | `lose()` | method | Call this when the player fails or time runs out. GameManager handles the rest. |
 
-### `GameManager.gd` / `GameManager.tscn` — the brain of the game
+### `GameManager.gd` / `GameManager.tscn` — the state machine
 
-**Do not touch these files.** GameManager:
+**Do not touch these files.** GameManager runs the full game loop:
+- Drives the screen sequence: Title → Intro → Playing → Dropout / Graduation
 - Shuffles and loads all mini-games in sequence
+- Tracks lives (3♥) and faculty progress (0/12) — decrements a life on each `lose()`, increments progress on each `win()`
 - Injects `time_scale` into your game before it loads (so your game runs faster in later rounds)
 - Listens for your `win()` / `lose()` calls and transitions to the next game
+- Calls `lose()` on the current mini-game automatically when the HUD timer reaches zero
 - Increases game speed every 3 rounds
-- Shows the result screen when all games are done
+- Shows Dropout screen if lives reach 0; Graduation screen if all games are completed with lives remaining
 
 Your only interaction with GameManager is registering your scene path in its list (see [Section 11](#11-week-12-scene-registration)).
 
 ### `HUD.tscn` — the timer bar overlay
 
 **Do not touch this file.** The HUD is automatically displayed on top of every mini-game. It:
+- Shows lives remaining (♥♥♥) in the top-left
+- Shows faculty progress (e.g. `3/12`) in the top-right
 - Shows the countdown timer bar (green → yellow → red)
-- Displays your `instruction_text` hint at the top
+- Displays your `instruction_text` hint below the bar
 - Flashes "NICE! ✓" or "TOO SLOW! ✗" after `win()` or `lose()` is called
+- **Automatically triggers `lose()` when the timer reaches zero** — you do not need to handle timeout yourself
 
 You never call HUD methods directly. Calling `win()` or `lose()` in your script is all it takes.
 
-### `ResultScreen.tscn` — the end-of-run screen
+### Screen scenes — `TitleScreen`, `IntroScreen`, `DropOutScreen`, `GraduationScreen`
 
-**Do not touch this file.** Shown automatically by GameManager after all mini-games have been played. Displays the final score and a "Play Again" button. No action needed from mini-game developers.
+**Do not touch these files.** All managed automatically by GameManager:
+- `TitleScreen.tscn` — "Can You Graduate from UM?" splash, shown at start and after "Play Again"
+- `IntroScreen.tscn` — 5-second intro ("You have 3 lives. 12 faculties. One degree."), tap to skip
+- `DropOutScreen.tscn` — shown when all 3 lives are lost; "Try Again" restarts the run
+- `GraduationScreen.tscn` — shown when all mini-games are completed with lives remaining; displays grade based on lives left
 
 ---
 
@@ -283,11 +298,11 @@ extends MiniGameBase
 
 ### What you must NOT do
 
-- Do **NOT** create your own timer. The HUD timer is managed by GameManager.
-- Do **NOT** call `get_tree().change_scene_to_*()`. GameManager handles transitions.
+- Do **NOT** create your own timer. The HUD timer runs automatically and calls `lose()` for you when time is up.
+- Do **NOT** call `get_tree().change_scene_to_*()`. GameManager handles all transitions.
 - Do **NOT** override `_ready()`. Override `setup()` instead.
 - Do **NOT** modify files in `shared/` without telling the Lead Programmer.
-- Do **NOT** add nodes named `HUD`, `GameManager`, or `ResultScreen` in your scene.
+- Do **NOT** add nodes named `HUD`, `GameManager`, `TitleScreen`, `IntroScreen`, `DropOutScreen`, or `GraduationScreen` in your scene.
 - Do **NOT** call `win()` or `lose()` more than once — a guard prevents double-firing but avoid it.
 
 ### Minimal working example
@@ -409,7 +424,7 @@ Each mini-game must satisfy **all** of the following:
 
 | Rule | Requirement |
 |------|------------|
-| **Duration** | Set `base_duration` between `5.0` and `10.0` seconds in `setup()` |
+| **Duration** | Set `base_duration` in `setup()` — recommended range is `5.0`–`15.0` seconds depending on your game's complexity |
 | **Input** | Must be completable with **tap / click only**. No drag, no keyboard required. |
 | **Clarity** | The goal must be obvious within 1 second of the scene loading. No tutorial text walls. |
 | **Resolution** | Design for **1280×720**. Use anchors and containers — do not hardcode pixel positions. |
