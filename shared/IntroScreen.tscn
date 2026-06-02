@@ -1,0 +1,45 @@
+[gd_scene format=3 uid="uid://dgiax5ls6wicn"]
+
+[ext_resource type="Script" uid="uid://baumqdkopb53m" path="res://shared/IntroScreen.gd" id="1_mll7a"]
+
+[node name="IntroScreen" type="CanvasLayer" unique_id=19811948]
+layer = 5
+script = ExtResource("1_mll7a")
+
+[node name="ColorRect" type="ColorRect" parent="." unique_id=956114950]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.078431375, 0.078431375, 0.14901961, 1)
+
+[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=1362641525]
+custom_minimum_size = Vector2(700, 220)
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -20.0
+offset_right = 20.0
+offset_bottom = 20.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 24
+
+[node name="IntroLabel" type="Label" parent="VBoxContainer" unique_id=626287664]
+layout_mode = 2
+theme_override_font_sizes/font_size = 36
+text = "You have 3 lives.
+  12 faculties.
+  One degree."
+horizontal_alignment = 1
+
+[node name="HintLabel" type="Label" parent="VBoxContainer" unique_id=923505485]
+modulate = Color(1, 1, 1, 0.54901963)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Tap anywhere to skip"
+horizontal_alignment = 1
