@@ -1,0 +1,58 @@
+[gd_scene format=3 uid="uid://dxr2tfoqjbe87"]
+
+[ext_resource type="Script" uid="uid://dtxovxycd35gq" path="res://shared/GraduationScreen.gd" id="1_q6gss"]
+
+[node name="GraduationScreen" type="CanvasLayer" unique_id=1830793523]
+layer = 20
+script = ExtResource("1_q6gss")
+
+[node name="ColorRect" type="ColorRect" parent="." unique_id=1733138593]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.039215688, 0.12156863, 0.039215688, 1)
+
+[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=288344261]
+custom_minimum_size = Vector2(700, 440)
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -350.0
+offset_top = -220.0
+offset_right = 350.0
+offset_bottom = 220.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 24
+
+[node name="HeadlineLabel" type="Label" parent="VBoxContainer" unique_id=381184476]
+layout_mode = 2
+theme_override_font_sizes/font_size = 52
+text = "CONGRATULATIONS!"
+horizontal_alignment = 1
+
+[node name="GradeLabel" type="Label" parent="VBoxContainer" unique_id=1527267408]
+layout_mode = 2
+theme_override_font_sizes/font_size = 36
+horizontal_alignment = 1
+
+[node name="LivesLabel" type="Label" parent="VBoxContainer" unique_id=688790091]
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+horizontal_alignment = 1
+
+[node name="PlayAgainLabel" type="Label" parent="VBoxContainer" unique_id=2054229395]
+modulate = Color(1, 1, 1, 0.6)
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Play Again to chase First Class?"
+horizontal_alignment = 1
+
+[node name="PlayAgainButton" type="Button" parent="VBoxContainer" unique_id=837668125]
+custom_minimum_size = Vector2(280, 70)
+layout_mode = 2
+text = "Play Again"
