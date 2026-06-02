@@ -298,6 +298,7 @@ extends MiniGameBase
 
 ### What you must NOT do
 
+- Do **NOT** call `win()` or `lose()` inside `setup()`. GameManager connects to your signals after the scene enters the tree — any call during `setup()` will be silently missed.
 - Do **NOT** create your own timer. The HUD timer runs automatically and calls `lose()` for you when time is up.
 - Do **NOT** call `get_tree().change_scene_to_*()`. GameManager handles all transitions.
 - Do **NOT** override `_ready()`. Override `setup()` instead.
