@@ -1,0 +1,10 @@
+[gd_scene format=3 uid="uid://c0d7b2e764qk1"]
+
+[ext_resource type="Script" uid="uid://dxvynbguqi0e3" path="res://minigames/osu_um/scripts/RippleEffect.gd" id="1_tubaj"]
+
+[node name="RippleEffect" type="Control" unique_id=409788994]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("1_tubaj")

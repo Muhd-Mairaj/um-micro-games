@@ -1,10 +1,10 @@
 extends Node
 class_name HitZone
 
-# Timing windows in milliseconds
-const PERFECT_WINDOW = 50     # ±50ms
-const GOOD_WINDOW = 100       # ±100ms
-const OK_WINDOW = 150         # ±150ms
+# Timing windows in milliseconds (generous for casual rhythm gameplay)
+const PERFECT_WINDOW = 200    # ±200ms
+const GOOD_WINDOW = 400       # ±400ms
+const OK_WINDOW = 600         # ±600ms
 
 func get_accuracy(time_difference_ms: float) -> String:
 	"""
