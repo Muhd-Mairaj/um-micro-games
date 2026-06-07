@@ -248,7 +248,7 @@ func _on_line_pressed(line_index: int) -> void:
 	if is_correct:
 		_tint_button(btn, COLOR_CORRECT)
 		await get_tree().create_timer(0.5).timeout
-		if not is_instance_valid(self):
+		if _finished or not is_instance_valid(self):
 			return
 		_current_round += 1
 		if _current_round >= _rounds.size():
@@ -258,7 +258,7 @@ func _on_line_pressed(line_index: int) -> void:
 	else:
 		_tint_button(btn, COLOR_WRONG)
 		await get_tree().create_timer(0.3).timeout
-		if not is_instance_valid(self):
+		if _finished or not is_instance_valid(self):
 			return
 		lose()
 
