@@ -67,6 +67,8 @@ const MAX_LIVES:   int    = 3
 @onready var instruction_label: Label       = $MarginContainer/VBoxContainer/InstructionLabel
 @onready var lives_label:       Label       = $MarginContainer/VBoxContainer/TopBar/LivesLabel
 @onready var progress_label:    Label       = $MarginContainer/VBoxContainer/TopBar/ProgressLabel
+@onready var get_ready_panel:   Panel       = $GetReadyPanel
+@onready var get_ready_label:   Label       = $GetReadyPanel/GetReadyLabel
 
 # ---------------------------------------------------------------------------
 # PRIVATE STATE
@@ -97,6 +99,16 @@ func start(duration: float) -> void:
 func set_instruction(text: String) -> void:
 	instruction_label.text    = text
 	instruction_label.visible = true
+
+## Show a full-screen instruction flash before the timer starts.
+## GameManager awaits this; it resolves after GET_READY_DURATION seconds.
+const GET_READY_DURATION: float = 2.2
+func show_get_ready(text: String) -> void:
+	result_label.visible    = false
+	get_ready_label.text    = text.to_upper()
+	get_ready_panel.visible = true
+	await get_tree().create_timer(GET_READY_DURATION).timeout
+	get_ready_panel.visible = false
 
 ## Called by GameManager after win() or lose() fires on the mini-game.
 ## Stops the timer visually and displays the appropriate result message.
