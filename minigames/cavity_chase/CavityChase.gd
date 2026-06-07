@@ -14,6 +14,8 @@ const CAVITY_RADIUS: float = 28.0
 const GUM_RADIUS: float    = 38.0
 const TONGUE_RADIUS: float = 50.0
 
+const SAFE_SPAWN_DIST: float = 150.0  # min obstacle-to-cursor spawn gap; prevents instant lose()
+
 const CAVITY_SPEED: float  = 75.0
 const GUM_SPEED: float     = 115.0
 const TONGUE_SPEED: float  = 148.0
@@ -63,6 +65,7 @@ func setup() -> void:
 
 func _spawn_sprites() -> void:
 	var sm: float = time_scale   # speed multiplier increases with difficulty
+	var cursor: Vector2 = get_global_mouse_position()
 
 	for _i in CAVITY_COUNT:
 		var angle: float = randf() * TAU
@@ -74,7 +77,7 @@ func _spawn_sprites() -> void:
 
 	for _i in GUM_COUNT:
 		_obstacles.append({
-			"pos":       _rand_pos(),
+			"pos":       _rand_safe_pos(cursor),
 			"speed":     GUM_SPEED * sm,
 			"radius":    GUM_RADIUS,
 			"color":     COLOR_GUM,
@@ -83,7 +86,7 @@ func _spawn_sprites() -> void:
 
 	for _i in TONGUE_COUNT:
 		_obstacles.append({
-			"pos":       _rand_pos(),
+			"pos":       _rand_safe_pos(cursor),
 			"speed":     TONGUE_SPEED * sm,
 			"radius":    TONGUE_RADIUS,
 			"color":     COLOR_TONGUE,
@@ -96,6 +99,16 @@ func _rand_pos() -> Vector2:
 		randf_range(m, _vp.size.x - m),
 		randf_range(HUD_TOP + m, _vp.size.y - m)
 	)
+
+## Re-rolls a spawn position until it's clear of the cursor by SAFE_SPAWN_DIST,
+## so an obstacle can never land on top of the player and trigger an instant lose().
+func _rand_safe_pos(avoid: Vector2) -> Vector2:
+	var pos: Vector2 = _rand_pos()
+	var attempts: int = 0
+	while pos.distance_to(avoid) < SAFE_SPAWN_DIST and attempts < 20:
+		pos = _rand_pos()
+		attempts += 1
+	return pos
 
 # ---------------------------------------------------------------------------
 # GAME LOOP
