@@ -184,8 +184,16 @@ func _load_next_game() -> void:
 		minigame_container.add_child(current_minigame)
 		current_minigame.game_won.connect(_on_won)
 		current_minigame.game_lost.connect(_on_lost)
-		hud.start(current_minigame.actual_duration())
+		# Freeze game logic while instruction is shown, then start timer.
+		current_minigame.set_process(false)
+		current_minigame.set_physics_process(false)
 		hud.set_instruction(current_minigame.instruction_text)
+		await hud.show_get_ready(current_minigame.instruction_text)
+		if not is_instance_valid(current_minigame):
+			return
+		current_minigame.set_process(true)
+		current_minigame.set_physics_process(true)
+		hud.start(current_minigame.actual_duration())
 		return
 
 	_end_run()
