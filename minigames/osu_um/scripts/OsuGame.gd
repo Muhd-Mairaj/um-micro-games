@@ -31,6 +31,7 @@ var audio_ended: bool = false  # Whether the audio track has finished playing
 var last_audio_position_ms: float = 0.0  # Last known audio position before it stopped
 var post_audio_elapsed_ms: float = 0.0   # Time accumulated after audio stops
 var _pending_lose: bool = false          # Deferred lose() (e.g. chart failed to load)
+var _started: bool = false               # Audio/round starts on the first real _process frame
 
 func setup() -> void:
 	"""Called by GameManager (via MiniGameBase._ready) to initialise the game.
@@ -77,11 +78,11 @@ func setup() -> void:
 
 	_spawn_circles()
 
-	audio_player.play()
-	game_active = true
-	audio_ended = false
-	last_audio_position_ms = 0.0
-	post_audio_elapsed_ms = 0.0
+	# NOTE: audio + timing intentionally start on the first _process frame
+	# (see _start_round), NOT here. GameManager disables _process during its
+	# 2.2s "get ready" screen; starting the song in setup() would let it play
+	# through that freeze and desync every circle. The first _process frame only
+	# fires once gameplay actually begins.
 
 func _process(delta: float) -> void:
 	# Deferred failure path (signals are connected by now).
@@ -89,6 +90,10 @@ func _process(delta: float) -> void:
 		_pending_lose = false
 		lose()
 		return
+	# First real frame (after GameManager's get-ready freeze): start the song now
+	# so audio and gameplay are in sync.
+	if not _started:
+		_start_round()
 	if not game_active:
 		return
 
@@ -126,6 +131,17 @@ func _process(delta: float) -> void:
 	# End the round once every circle is resolved.
 	if active_circles.size() > 0 and (hit_circles.size() + missed_circles.size()) >= active_circles.size():
 		_end_round()
+
+func _start_round() -> void:
+	_started = true
+	# If the chart failed to load, _pending_lose already handled it; stay idle.
+	if _pending_lose:
+		return
+	audio_player.play()
+	game_active = true
+	audio_ended = false
+	last_audio_position_ms = 0.0
+	post_audio_elapsed_ms = 0.0
 
 func _update_ui() -> void:
 	score_label.text = "Score: %d" % score_manager.get_score()
