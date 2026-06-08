@@ -57,6 +57,22 @@ func get_max_combo() -> int:
 func get_accuracy_counts() -> Dictionary:
 	return accuracy_counts.duplicate()
 
+func get_total_notes() -> int:
+	return accuracy_counts.perfect + accuracy_counts.good + accuracy_counts.ok + accuracy_counts.miss
+
+func get_clean_hits() -> int:
+	"""Notes hit within any timing window (perfect + good + ok)."""
+	return accuracy_counts.perfect + accuracy_counts.good + accuracy_counts.ok
+
+## Weighted accuracy as a percentage (perfect=300, good=100, ok=50, miss=0).
+## Single source of truth for both the HUD readout and the win/lose check.
+func get_accuracy_pct() -> float:
+	var total := get_total_notes()
+	if total == 0:
+		return 0.0
+	var weighted: int = accuracy_counts.perfect * 300 + accuracy_counts.good * 100 + accuracy_counts.ok * 50
+	return 100.0 * weighted / (total * 300.0)
+
 func reset() -> void:
 	"""Reset all stats for a new game."""
 	score = 0

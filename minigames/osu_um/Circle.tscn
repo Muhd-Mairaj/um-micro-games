@@ -2,17 +2,19 @@
 
 [ext_resource type="Script" uid="uid://6v3iaxb14s3i" path="res://minigames/osu_um/scripts/Circle.gd" id="1_uocnk"]
 
-[node name="Circle" type="ColorRect" unique_id=645587328]
-offset_right = 40.0
-offset_bottom = 40.0
+[node name="Circle" type="Control" unique_id=645587328]
+offset_right = 80.0
+offset_bottom = 80.0
 script = ExtResource("1_uocnk")
 
-[node name="NoteLabel" type="Label" parent="." unique_id=135476005]
-custom_minimum_size = Vector2(80, 80)
-layout_mode = 0
-offset_right = 40.0
-offset_bottom = 23.0
-theme_override_font_sizes/font_size = 32
+[node name="Button" type="ColorRect" parent="."]
+offset_right = 80.0
+offset_bottom = 80.0
+
+[node name="NoteLabel" type="Label" parent="."]
+offset_right = 80.0
+offset_bottom = 80.0
+theme_override_font_sizes/font_size = 30
 text = "♪"
 horizontal_alignment = 1
 vertical_alignment = 1

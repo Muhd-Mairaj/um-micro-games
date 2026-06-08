@@ -10,7 +10,6 @@ var is_animating: bool = true
 
 func _ready() -> void:
 	queue_redraw()
-	print("DEBUG: RippleEffect spawned")
 
 func _process(delta: float) -> void:
 	if not is_animating:
@@ -48,7 +47,6 @@ func _draw() -> void:
 
 func set_color(color: Color) -> void:
 	ripple_color = color
-	print("DEBUG: Ripple color set to: %s" % ripple_color)
 
 func set_center(pos: Vector2) -> void:
 	position = pos

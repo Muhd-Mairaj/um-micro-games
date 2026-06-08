@@ -4,47 +4,110 @@
 [ext_resource type="FontFile" uid="uid://c6hhsjjvmw2l5" path="res://assets/Font/Kenney Future.ttf" id="2_4dsmj"]
 [ext_resource type="AudioStream" uid="uid://bu1e8xwf2kkxx" path="res://minigames/osu_um/Campus_Pixel_March.wav" id="2_ou2d7"]
 
-[node name="OsuGame" type="Node2D" unique_id=1784896395]
+[sub_resource type="Gradient" id="Gradient_spot"]
+offsets = PackedFloat32Array(0, 1)
+colors = PackedColorArray(1, 0.95, 0.78, 0.5, 1, 0.95, 0.78, 0)
+
+[sub_resource type="GradientTexture2D" id="GradTex_spot"]
+gradient = SubResource("Gradient_spot")
+width = 512
+height = 512
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+fill_to = Vector2(1, 0.5)
+
+[sub_resource type="CanvasItemMaterial" id="Mat_add"]
+blend_mode = 1
+
+[node name="OsuGame" type="Node2D"]
 script = ExtResource("1_ibobk")
 
-[node name="Background" type="ColorRect" parent="." unique_id=355045258]
+[node name="Stage" type="CanvasLayer" parent="."]
+layer = -1
+
+[node name="BackWall" type="TextureRect" parent="Stage"]
+layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.50980395, 0.69411767, 0.8784314, 1)
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 6
 
-[node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="." unique_id=1446263394]
+[node name="Spotlight" type="TextureRect" parent="Stage"]
+material = SubResource("Mat_add")
+layout_mode = 1
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -380.0
+offset_top = -80.0
+offset_right = 380.0
+offset_bottom = 460.0
+grow_horizontal = 2
+mouse_filter = 2
+modulate = Color(1, 1, 1, 0.28)
+texture = SubResource("GradTex_spot")
+expand_mode = 1
+
+[node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="."]
 stream = ExtResource("2_ou2d7")
 
-[node name="CirclesContainer" type="Node2D" parent="." unique_id=1562926880]
+[node name="CirclesContainer" type="Node2D" parent="."]
 
-[node name="UI" type="CanvasLayer" parent="." unique_id=868626632]
+[node name="UI" type="CanvasLayer" parent="."]
 
-[node name="AccuracyLabel" type="Label" parent="UI" unique_id=2138085303]
-offset_left = 10.0
-offset_top = 90.0
-offset_right = 111.0
-offset_bottom = 113.0
+[node name="ComboLabel" type="Label" parent="UI"]
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 24.0
+offset_top = -104.0
+offset_right = 420.0
+offset_bottom = -40.0
+grow_vertical = 0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.7)
+theme_override_constants/outline_size = 6
 theme_override_fonts/font = ExtResource("2_4dsmj")
-theme_override_font_sizes/font_size = 18
-text = "Accuracy: 0%"
+theme_override_font_sizes/font_size = 44
+text = "Combo: 0"
+vertical_alignment = 1
 
-[node name="ComboLabel" type="Label" parent="UI" unique_id=366085307]
-offset_left = 10.0
-offset_top = 50.0
-offset_right = 83.0
-offset_bottom = 73.0
+[node name="ScoreLabel" type="Label" parent="UI"]
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -360.0
+offset_top = -58.0
+offset_right = -24.0
+offset_bottom = -26.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.7)
+theme_override_constants/outline_size = 5
+theme_override_fonts/font = ExtResource("2_4dsmj")
+theme_override_font_sizes/font_size = 28
+text = "Score: 0"
+horizontal_alignment = 2
+
+[node name="AccuracyLabel" type="Label" parent="UI"]
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -360.0
+offset_top = -92.0
+offset_right = -24.0
+offset_bottom = -62.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.7)
+theme_override_constants/outline_size = 5
 theme_override_fonts/font = ExtResource("2_4dsmj")
 theme_override_font_sizes/font_size = 20
-text = "Combo: 0"
-
-[node name="ScoreLabel" type="Label" parent="UI" unique_id=756556433]
-offset_left = 10.0
-offset_top = 10.0
-offset_right = 71.0
-offset_bottom = 33.0
-theme_override_fonts/font = ExtResource("2_4dsmj")
-theme_override_font_sizes/font_size = 24
-text = "Score: 0"
+text = "Accuracy: 100.0%"
+horizontal_alignment = 2

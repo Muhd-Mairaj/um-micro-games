@@ -6,18 +6,17 @@ var current_chart: Dictionary = {}
 func load_chart(chart_path: String) -> bool:
 	"""Load a JSON chart file and parse it."""
 	if not ResourceLoader.exists(chart_path):
-		print("Chart file not found: ", chart_path)
+		push_error("[ChartManager] Chart file not found: " + chart_path)
 		return false
-	
+
 	var json = JSON.new()
 	var file_data = FileAccess.get_file_as_string(chart_path)
-	
+
 	if json.parse(file_data) != OK:
-		print("Failed to parse JSON chart")
+		push_error("[ChartManager] Failed to parse JSON chart: " + chart_path)
 		return false
-	
+
 	current_chart = json.data
-	print("Chart loaded: ", current_chart.metadata.title)
 	return true
 
 func get_circles() -> Array:
