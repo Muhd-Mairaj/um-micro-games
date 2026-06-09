@@ -1,0 +1,77 @@
+[gd_scene format=3 uid="uid://n4a4gou8e783"]
+
+[ext_resource type="Script" uid="uid://b4wiikpdwhum" path="res://minigames/phone_down/PhoneDown.gd" id="1_vd81p"]
+[ext_resource type="Texture2D" uid="uid://c3o4v31462r1n" path="res://minigames/phone_down/assets/lecture_hall_bg.png" id="2_p0er3"]
+[ext_resource type="Texture2D" uid="uid://c2u1ip5i1yibd" path="res://minigames/phone_down/assets/lecturer_safe.png" id="3_kescg"]
+[ext_resource type="Texture2D" uid="uid://cgnk7pclfsslr" path="res://minigames/phone_down/assets/student.png" id="4_6j2lu"]
+[ext_resource type="Texture2D" uid="uid://u2gkckkl6crf" path="res://minigames/phone_down/assets/phone_visible.png" id="5_dum4r"]
+
+[node name="PhoneDown" type="Node2D" unique_id=1157717345]
+script = ExtResource("1_vd81p")
+
+[node name="Background" type="TextureRect" parent="." unique_id=1424500758]
+texture = ExtResource("2_p0er3")
+
+[node name="Lecturer" type="Sprite2D" parent="." unique_id=1462399664]
+position = Vector2(640, 300)
+scale = Vector2(3, 3)
+texture = ExtResource("3_kescg")
+
+[node name="Student" type="Sprite2D" parent="." unique_id=1876679287]
+position = Vector2(640, 500)
+scale = Vector2(3, 3)
+texture = ExtResource("4_6j2lu")
+
+[node name="Phone" type="Sprite2D" parent="." unique_id=1384774092]
+position = Vector2(750, 500)
+scale = Vector2(2, 2)
+texture = ExtResource("5_dum4r")
+
+[node name="UILayer" type="CanvasLayer" parent="." unique_id=2011111001]
+layer = 10
+
+[node name="FlashOverlay" type="ColorRect" parent="UILayer" unique_id=2011111002]
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(1, 0, 0, 0)
+
+[node name="LivesLabel" type="Label" parent="UILayer" unique_id=2011111003]
+offset_left = 20.0
+offset_top = 16.0
+offset_right = 260.0
+offset_bottom = 56.0
+theme_override_font_sizes/font_size = 28
+text = "❤️ ❤️ ❤️"
+
+[node name="GlancesLabel" type="Label" parent="UILayer" unique_id=2011111004]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -220.0
+offset_top = 16.0
+offset_right = -20.0
+offset_bottom = 56.0
+theme_override_font_sizes/font_size = 22
+text = "Glances: 0 / 3"
+horizontal_alignment = 2
+
+[node name="FeedbackLabel" type="Label" parent="UILayer" unique_id=2011111005]
+visible = false
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -160.0
+offset_top = -50.0
+offset_right = 160.0
+offset_bottom = 10.0
+theme_override_font_sizes/font_size = 56
+text = "CAUGHT!"
+horizontal_alignment = 1
+vertical_alignment = 1
