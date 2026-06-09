@@ -1,0 +1,30 @@
+[gd_scene format=3 uid="uid://m123main"]
+
+[ext_resource type="Script" path="res://minigames/hurdle_rush/HurdleRush.gd" id="1_main"]
+[ext_resource type="PackedScene" uid="uid://b123bg" path="res://minigames/hurdle_rush/Bg.tscn" id="2_bg"]
+[ext_resource type="PackedScene" uid="uid://d123dino" path="res://minigames/hurdle_rush/Dino.tscn" id="3_dino"]
+[ext_resource type="AudioStream" uid="uid://c14082" path="res://400 Sounds Pack/Retro/lose.wav" id="4_lose"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_floor"]
+size = Vector2(1300, 100)
+
+[node name="HurdleRush" type="Node2D"]
+script = ExtResource("1_main")
+
+[node name="Bg" parent="." instance=ExtResource("2_bg")]
+
+[node name="Floor" type="StaticBody2D" parent="."]
+position = Vector2(640, 580)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Floor"]
+shape = SubResource("RectangleShape2D_floor")
+
+[node name="Dino" parent="." instance=ExtResource("3_dino")]
+position = Vector2(160, 500)
+
+[node name="HurdleTimer" type="Timer" parent="."]
+
+[node name="LoseSound" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("4_lose")
+
+[connection signal="timeout" from="HurdleTimer" to="." method="_on_hurdle_timer_timeout"]

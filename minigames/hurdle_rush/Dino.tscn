@@ -1,0 +1,22 @@
+[gd_scene format=3 uid="uid://d123dino"]
+
+[ext_resource type="Texture2D" path="res://minigames/sprint_start/assets/east.png" id="1_tex"]
+[ext_resource type="AudioStream" path="res://400 Sounds Pack/Retro/jump.wav" id="2_jump_sound"]
+[ext_resource type="Script" path="res://minigames/hurdle_rush/Dino.gd" id="3_script"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_dino"]
+size = Vector2(40, 80)
+
+[node name="Dino" type="CharacterBody2D"]
+script = ExtResource("3_script")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+scale = Vector2(3, 3)
+texture = ExtResource("1_tex")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_dino")
+
+[node name="JumpSound" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("2_jump_sound")
+volume_db = -5.0

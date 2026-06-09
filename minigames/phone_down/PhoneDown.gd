@@ -81,6 +81,12 @@ var _awaiting_safe: bool = false
 @onready var glances_label: Label        = $UILayer/GlancesLabel
 @onready var flash_overlay: ColorRect    = $UILayer/FlashOverlay
 @onready var feedback_label: Label       = $UILayer/FeedbackLabel
+@onready var audio_player: AudioStreamPlayer = $AudioPlayer
+
+# Sound files (from the 400 Sounds Pack)
+const SFX_WARNING = preload("res://400 Sounds Pack/UI/sci_fi_hover.wav")
+const SFX_HIDE = preload("res://400 Sounds Pack/UI/sci_fi_confirm.wav")
+const SFX_CAUGHT = preload("res://400 Sounds Pack/Retro/lose.wav")
 
 # ---------------------------------------------------------------------------
 # SOLO TESTING — keep _ready() only for running the scene standalone
@@ -189,6 +195,10 @@ func _input(event: InputEvent) -> void:
 			phone.texture = TEX_PHONE_HIDDEN
 			glances_survived += 1
 			_show_feedback("NICE!", Color(0.2, 1.0, 0.4))
+			
+			audio_player.stream = SFX_HIDE
+			audio_player.play()
+			
 			_update_ui()
 			
 			# Instantly exit the GLANCING state so _process() doesn't trigger _lose_life()
@@ -205,6 +215,8 @@ func _input(event: InputEvent) -> void:
 		"SAFE":
 			lives -= 1
 			_show_feedback("TOO EARLY!", Color(1.0, 0.5, 0.0))
+			audio_player.stream = SFX_CAUGHT
+			audio_player.play()
 			_update_ui()
 			if lives <= 0:
 				game_active = false
@@ -215,6 +227,8 @@ func _input(event: InputEvent) -> void:
 		"WARNING":
 			lives -= 1
 			_show_feedback("WAIT!", Color(1.0, 1.0, 0.0))
+			audio_player.stream = SFX_CAUGHT
+			audio_player.play()
 			_update_ui()
 			if lives <= 0:
 				game_active = false
@@ -228,6 +242,8 @@ func _input(event: InputEvent) -> void:
 func _lose_life() -> void:
 	lives -= 1
 	_show_feedback("CAUGHT!", Color(1.0, 0.25, 0.25))
+	audio_player.stream = SFX_CAUGHT
+	audio_player.play()
 	_update_ui()
 	if lives <= 0:
 		game_active = false
@@ -261,6 +277,8 @@ func _apply_state() -> void:
 			phone.texture = TEX_PHONE_VISIBLE
 		"WARNING":
 			lecturer.texture = TEX_LECTURER_WARNING
+			audio_player.stream = SFX_WARNING
+			audio_player.play()
 		"GLANCING":
 			lecturer.texture = TEX_LECTURER_ANGRY
 			phone.texture = TEX_PHONE_VISIBLE

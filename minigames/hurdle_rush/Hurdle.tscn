@@ -1,0 +1,20 @@
+[gd_scene format=3 uid="uid://h123hurdle"]
+
+[ext_resource type="Script" path="res://minigames/hurdle_rush/Hurdle.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://minigames/hurdle_rush/assets/fenceBroken.png" id="2_tex"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_hurdle"]
+size = Vector2(70, 70)
+
+[node name="Hurdle" type="Area2D" groups=["obstacles"]]
+script = ExtResource("1_script")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+position = Vector2(0, -35)
+texture = ExtResource("2_tex")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -35)
+shape = SubResource("RectangleShape2D_hurdle")
+
+[connection signal="body_entered" from="." to="." method="_on_body_entered"]
