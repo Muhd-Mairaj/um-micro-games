@@ -190,6 +190,11 @@ func _input(event: InputEvent) -> void:
 			glances_survived += 1
 			_show_feedback("NICE!", Color(0.2, 1.0, 0.4))
 			_update_ui()
+			
+			# Instantly exit the GLANCING state so _process() doesn't trigger _lose_life()
+			# due to the timer expiring while we are waiting for the safe delay.
+			state = "HIDDEN" 
+			
 			if glances_survived >= glances_required:
 				game_active = false
 				win()
