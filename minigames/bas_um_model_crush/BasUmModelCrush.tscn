@@ -132,8 +132,8 @@ _data = {
 }
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_hb6fa"]
-radius = 113.0
-height = 340.0
+radius = 51.0
+height = 130.0
 
 [sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_1kurv"]
 animation = &"dead"
@@ -157,7 +157,7 @@ states/walk/position = Vector2(357, 99.75)
 transitions = ["walk", "dead", SubResource("AnimationNodeStateMachineTransition_yohae"), "Start", "walk", SubResource("AnimationNodeStateMachineTransition_tur8b")]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_prr51"]
-size = Vector2(268.5, 363)
+size = Vector2(99.5, 125.5)
 
 [sub_resource type="WorldBoundaryShape2D" id="WorldBoundaryShape2D_t558y"]
 distance = 1276.0
@@ -170,10 +170,10 @@ script = ExtResource("1_04oa7")
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 7.0
-offset_top = 18.0
-offset_right = 2823.0
-offset_bottom = 1554.0
+offset_left = 7.000041
+offset_top = 18.007662
+offset_right = 1288.9347
+offset_bottom = 733.27386
 grow_horizontal = 2
 grow_vertical = 2
 rotation = -0.005339976
@@ -182,14 +182,15 @@ expand_mode = 1
 stretch_mode = 6
 
 [node name="Bus" type="TextureRect" parent="." unique_id=1859784530]
-offset_left = -19.0
-offset_top = 723.0
-offset_right = 579.0
-offset_bottom = 1767.0
+offset_left = 6.0
+offset_top = 397.0
+offset_right = 258.0
+offset_bottom = 827.0
 texture = ExtResource("9_1h2ci")
+expand_mode = 1
 
 [node name="Player" type="CharacterBody2D" parent="." unique_id=1149855050]
-position = Vector2(2739, 1276)
+position = Vector2(1243, 624)
 scale = Vector2(-1.5, 1)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Player" unique_id=904553296]
@@ -198,14 +199,14 @@ rotation = -2.1369581
 shape = SubResource("CapsuleShape2D_amus0")
 
 [node name="AnimatedS" type="AnimatedSprite2D" parent="Player" unique_id=1003778400]
-position = Vector2(108.666626, 40)
-scale = Vector2(1, 1.2267276)
+position = Vector2(1.3333333, 18)
+scale = Vector2(0.3679463, 0.49058098)
 sprite_frames = SubResource("SpriteFrames_a84im")
 animation = &"walk"
 frame_progress = 0.5461275
 
 [node name="Student1" type="CharacterBody2D" parent="." unique_id=2078312606]
-position = Vector2(616, 1286)
+position = Vector2(319, 578)
 collision_layer = 4
 script = ExtResource("6_prr51")
 
@@ -214,15 +215,15 @@ root_node = NodePath("../..")
 libraries/ = SubResource("AnimationLibrary_hjg0c")
 
 [node name="Sprite2D" type="Sprite2D" parent="Student1" unique_id=308537804]
-position = Vector2(84.99994, 57)
-scale = Vector2(0.34374994, 0.37988284)
+position = Vector2(-6, 72)
+scale = Vector2(0.1108285, 0.13525392)
 texture = ExtResource("6_amus0")
 hframes = 4
 frame = 2
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Student1" unique_id=1981518145]
 visibility_layer = 4
-position = Vector2(105, 49)
+position = Vector2(-2, 74)
 shape = SubResource("CapsuleShape2D_hb6fa")
 
 [node name="Damageable" type="Node" parent="Student1" unique_id=15826170]
@@ -246,9 +247,9 @@ script = ExtResource("10_t558y")
 script = ExtResource("11_5j3ta")
 
 [node name="ClickArea" type="Area2D" parent="Student1" unique_id=582708094]
+position = Vector2(-2, 73)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Student1/ClickArea" unique_id=1466987009]
-position = Vector2(108, 49)
 shape = SubResource("RectangleShape2D_prr51")
 
 [node name="LoseSound" type="AudioStreamPlayer2D" parent="." unique_id=539129528]

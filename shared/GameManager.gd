@@ -54,7 +54,8 @@ const RESULT_PAUSE_DURATION: float = 0.9
 # Paths are case-sensitive on Linux/Mac. Must match the file on disk exactly.
 # ---------------------------------------------------------------------------
 var minigame_scenes: Array[String] = [
-	"res://minigames/syntax_saviour/SyntaxSaviour.tscn",
+	"res://minigames/bas_um_model_crush/BasUmModelCrush.tscn",
+	#"res://minigames/syntax_saviour/SyntaxSaviour.tscn",
 	# --- THE STITCHER ADDS LINES HERE IN WEEK 12 ---
 ]
 

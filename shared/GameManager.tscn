@@ -9,3 +9,37 @@ script = ExtResource("1_8l50k")
 [node name="HUD" parent="." unique_id=1273353250 instance=ExtResource("2_41yy7")]
 
 [node name="MiniGameContainer" type="Node2D" parent="." unique_id=516374847]
+
+[node name="BasUmModelCrush" type="Node2D" parent="." unique_id=2028312286]
+
+[node name="Student2" type="TextureButton" parent="BasUmModelCrush" unique_id=530635479]
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="Background" type="TextureRect" parent="BasUmModelCrush" unique_id=1047636513]
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="Model" type="TextureRect" parent="BasUmModelCrush" unique_id=830408429]
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="Student1" type="TextureButton" parent="BasUmModelCrush" unique_id=1294043142]
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="Student3" type="TextureButton" parent="BasUmModelCrush" unique_id=2098162455]
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="Student4" type="TextureButton" parent="BasUmModelCrush" unique_id=1094183176]
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="Student5" type="TextureButton" parent="BasUmModelCrush" unique_id=1514928227]
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="Student6" type="TextureButton" parent="BasUmModelCrush" unique_id=614536477]
+offset_right = 40.0
+offset_bottom = 40.0

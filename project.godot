@@ -19,6 +19,11 @@ config/icon="res://icon.svg"
 
 SignalBus="*uid://dnrbv3qquex8i"
 
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
+
 [physics]
 
 3d/physics_engine="Jolt Physics"
