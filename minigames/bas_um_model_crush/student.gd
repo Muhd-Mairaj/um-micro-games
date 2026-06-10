@@ -12,8 +12,6 @@ func _ready() -> void:
 	sprite.flip_h = false
 	damageable.on_hit.connect(_on_hit)
 	SignalBus.on_student_dead.connect(_on_dead)
-
-	# Start walk animation
 	var playback = anim_tree.get("parameters/playback")
 	playback.travel("walk")
 
@@ -34,11 +32,11 @@ func stop_student() -> void:
 	playback.travel("dead")
 
 func reset_student(new_x: float, base_y: float) -> void:
-	is_dead        = false
-	game_over      = false
-	visible        = true
-	modulate       = Color(1, 1, 1, 1)
-	position       = Vector2(new_x, base_y)
+	is_dead   = false
+	game_over = false
+	visible   = true
+	modulate  = Color(1, 1, 1, 1)
+	position  = Vector2(new_x, base_y)
 	damageable.health = 1
 	var playback = anim_tree.get("parameters/playback")
 	playback.travel("walk")

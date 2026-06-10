@@ -172,25 +172,24 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = 7.0
 offset_top = 18.0
-offset_right = 2823.0
-offset_bottom = 1554.0
+offset_right = 1927.0
+offset_bottom = 1098.0
 grow_horizontal = 2
 grow_vertical = 2
 rotation = -0.005339976
 texture = ExtResource("2_dnwrr")
 expand_mode = 1
-stretch_mode = 6
 
 [node name="Bus" type="TextureRect" parent="." unique_id=1859784530]
-offset_left = -19.0
-offset_top = 723.0
-offset_right = 579.0
-offset_bottom = 1767.0
+offset_left = -36.0
+offset_top = 279.0
+offset_right = 562.0
+offset_bottom = 1323.0
 texture = ExtResource("9_1h2ci")
 
 [node name="Player" type="CharacterBody2D" parent="." unique_id=1149855050]
-position = Vector2(2739, 1276)
-scale = Vector2(-1.5, 1)
+position = Vector2(1832, 973)
+scale = Vector2(0.4, 0.4)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Player" unique_id=904553296]
 position = Vector2(2656.0132, 1729.0381)
@@ -198,14 +197,14 @@ rotation = -2.1369581
 shape = SubResource("CapsuleShape2D_amus0")
 
 [node name="AnimatedS" type="AnimatedSprite2D" parent="Player" unique_id=1003778400]
-position = Vector2(108.666626, 40)
-scale = Vector2(1, 1.2267276)
+position = Vector2(-122.500114, -302.55234)
+scale = Vector2(4.0112987, 3.2333207)
 sprite_frames = SubResource("SpriteFrames_a84im")
 animation = &"walk"
 frame_progress = 0.5461275
 
 [node name="Student1" type="CharacterBody2D" parent="." unique_id=2078312606]
-position = Vector2(616, 1286)
+position = Vector2(655, 896)
 collision_layer = 4
 script = ExtResource("6_prr51")
 
@@ -214,7 +213,7 @@ root_node = NodePath("../..")
 libraries/ = SubResource("AnimationLibrary_hjg0c")
 
 [node name="Sprite2D" type="Sprite2D" parent="Student1" unique_id=308537804]
-position = Vector2(84.99994, 57)
+position = Vector2(31, -42.99991)
 scale = Vector2(0.34374994, 0.37988284)
 texture = ExtResource("6_amus0")
 hframes = 4
@@ -222,7 +221,7 @@ frame = 2
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Student1" unique_id=1981518145]
 visibility_layer = 4
-position = Vector2(105, 49)
+position = Vector2(10, -22)
 shape = SubResource("CapsuleShape2D_hb6fa")
 
 [node name="Damageable" type="Node" parent="Student1" unique_id=15826170]
@@ -246,9 +245,11 @@ script = ExtResource("10_t558y")
 script = ExtResource("11_5j3ta")
 
 [node name="ClickArea" type="Area2D" parent="Student1" unique_id=582708094]
+position = Vector2(48, -403)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Student1/ClickArea" unique_id=1466987009]
-position = Vector2(108, 49)
+position = Vector2(-13, 375)
+scale = Vector2(0.4, 0.4)
 shape = SubResource("RectangleShape2D_prr51")
 
 [node name="LoseSound" type="AudioStreamPlayer2D" parent="." unique_id=539129528]
