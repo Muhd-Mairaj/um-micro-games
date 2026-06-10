@@ -11,11 +11,14 @@ const STAGE_TEXTURE_PATH := "res://minigames/osu_um/theater-stage-with-red-curta
 @onready var combo_label: Label = $UI/ComboLabel
 @onready var accuracy_label: Label = $UI/AccuracyLabel
 
+# Preloaded once instead of load()-ing on every judgement label (see review).
+const JUDGE_FONT := preload("res://assets/Font/Kenney Future.ttf")
+
 # --- Tunables ---
-const PREEMPT_MS: float = 900.0       # how long a circle is visible before its beat
+const PREEMPT_MS: float = 1200.0      # how long a circle is visible before its beat
 const END_PAD_MS: float = 1000.0      # round budget = last note + this pad
 const MISS_GRACE_MS: float = 150.0     # extra ms past the OK window before auto-miss
-const PASS_ACCURACY_PCT: float = 60.0  # accuracy must exceed this to win (<=60 loses)
+const PASS_ACCURACY_PCT: float = 40.0  # accuracy must exceed this to win (<=40 loses)
 
 var chart_manager: ChartManager
 var score_manager: ScoreManager
@@ -43,7 +46,7 @@ func setup() -> void:
 	hit_zone = HitZone.new()
 	add_child(hit_zone)
 
-	instruction_text = "Direct the performance to the beat!"
+	instruction_text = "Direct the performance! The closer the ring to the circle, the more accurate your hit!"
 
 	# Load the stage backdrop in code (same proven load() path Circle.gd uses for
 	# its button art) rather than via a scene ExtResource, which can fail to
@@ -153,7 +156,7 @@ func _end_round() -> void:
 	if audio_player.playing:
 		audio_player.stop()
 	# A WarioWare round must pass or fail on performance: win only above the
-	# accuracy threshold; 60% or lower is a loss.
+	# accuracy threshold; 40% or lower is a loss.
 	if score_manager.get_accuracy_pct() > PASS_ACCURACY_PCT:
 		win()
 	else:
@@ -227,7 +230,7 @@ func _show_accuracy_feedback(accuracy: String, pos: Vector2) -> void:
 
 	label.global_position = pos - Vector2(20, 20)
 	label.z_index = 100
-	label.add_theme_font_override("font", load("res://assets/Font/Kenney Future.ttf"))
+	label.add_theme_font_override("font", JUDGE_FONT)
 	add_child(label)
 
 	var tween := create_tween()

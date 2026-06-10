@@ -1,10 +1,12 @@
 extends Node
 class_name HitZone
 
-# Timing windows in milliseconds (generous for casual rhythm gameplay)
-const PERFECT_WINDOW = 200    # ±200ms
-const GOOD_WINDOW = 400       # ±400ms
-const OK_WINDOW = 600         # ±600ms
+# Timing windows in milliseconds (generous for casual rhythm gameplay).
+# Widened per review so on-beat clicks comfortably count as perfect, keeping the
+# weighted accuracy above the 60% pass line achievable for casual players.
+const PERFECT_WINDOW = 300    # ±300ms
+const GOOD_WINDOW = 500       # ±500ms
+const OK_WINDOW = 700         # ±700ms
 
 func get_accuracy(time_difference_ms: float) -> String:
 	"""

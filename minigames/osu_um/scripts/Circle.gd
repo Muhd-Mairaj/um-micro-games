@@ -11,9 +11,9 @@ const FADE_IN_MS: float = 250.0
 
 var hit_state: String = "not_hit"  # not_hit, perfect, good, ok, miss, missed
 var circle_color: Color = Color.WHITE
-# Clickable radius. Kept a touch larger than the visual radius (40) as a small,
-# deliberate forgiveness margin so on-beat clicks near the edge still register.
-var hit_circle_radius: float = 46.0
+# Clickable radius. Kept generously larger than the visual radius (40) as a
+# forgiveness margin so on-beat clicks near the edge still register (easier play).
+var hit_circle_radius: float = 58.0
 
 var particle_scene = preload("res://minigames/osu_um/ParticleBurst.tscn")
 var ripple_scene = preload("res://minigames/osu_um/RippleEffect.tscn")
