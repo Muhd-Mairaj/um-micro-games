@@ -53,6 +53,20 @@ var _obstacles: Array = []
 var _vp: Rect2        = Rect2()
 const HUD_TOP: float  = 80.0   # pixels reserved at top for HUD overlay
 
+# pop effects: brief expanding rings drawn where a cavity was just drilled
+var _pop_effects: Array = []
+const POP_DURATION: float = 0.35
+const COLOR_POP: Color = Color(1.0, 0.95, 0.6, 1.0)
+
+# ---------------------------------------------------------------------------
+# AUDIO
+# ---------------------------------------------------------------------------
+var _drill_sound: AudioStreamPlayer
+var _pop_sound: AudioStreamPlayer
+var _win_sound: AudioStreamPlayer
+var _lose_sound: AudioStreamPlayer
+var _bg_music: AudioStreamPlayer
+
 # ---------------------------------------------------------------------------
 # MINIGAMEBASE CONTRACT
 # ---------------------------------------------------------------------------
@@ -62,6 +76,29 @@ func setup() -> void:
 	_vp              = get_viewport_rect()
 	_mouth_texture   = load("res://minigames/cavity_chase/assets/mouth_bg_a.png")
 	_spawn_sprites()
+
+	_drill_sound = AudioStreamPlayer.new()
+	_drill_sound.stream = load("res://400 Sounds Pack/Machines/drill_whizz.wav")
+	add_child(_drill_sound)
+
+	_pop_sound = AudioStreamPlayer.new()
+	_pop_sound.stream = load("res://400 Sounds Pack/Match Three/match_synth_3.wav")
+	add_child(_pop_sound)
+
+	_win_sound = AudioStreamPlayer.new()
+	_win_sound.stream = load("res://win v1.0.wav")
+	add_child(_win_sound)
+
+	_lose_sound = AudioStreamPlayer.new()
+	_lose_sound.stream = load("res://lose v1.0.wav")
+	add_child(_lose_sound)
+
+	_bg_music = AudioStreamPlayer.new()
+	_bg_music.stream = load("res://400 Sounds Pack/Musical Effects/music_box_inn.wav")
+	_bg_music.volume_db = -8.0
+	_bg_music.finished.connect(func(): _bg_music.play())
+	add_child(_bg_music)
+	_bg_music.play()
 
 func _spawn_sprites() -> void:
 	var sm: float = time_scale   # speed multiplier increases with difficulty
@@ -121,19 +158,38 @@ func _process(delta: float) -> void:
 
 	# -- Update cavities --
 	var drilled: Array = []
+	var any_drilling: bool = false
 	for cavity in _cavities:
 		cavity.pos += cavity.vel * delta
 		_bounce(cavity)
 		if cursor.distance_to(cavity.pos) < DRILL_RADIUS + CAVITY_RADIUS:
 			cavity.drill_timer += delta
+			any_drilling = true
 			if cavity.drill_timer >= DRILL_TIME:
 				drilled.append(cavity)
 		else:
 			cavity.drill_timer = 0.0
 	for c in drilled:
 		_cavities.erase(c)
+		_pop_sound.play()
+		_pop_effects.append({"pos": c.pos, "t": 0.0})
+
+	# -- Drilling sound: keep (re)playing while actively drilling, stop otherwise --
+	if any_drilling:
+		if not _drill_sound.playing:
+			_drill_sound.play()
+	elif _drill_sound.playing:
+		_drill_sound.stop()
+
+	# -- Update pop effects --
+	for effect in _pop_effects:
+		effect.t += delta
+	_pop_effects = _pop_effects.filter(func(e): return e.t < POP_DURATION)
 
 	if _cavities.is_empty():
+		_drill_sound.stop()
+		_bg_music.stop()
+		_win_sound.play()
 		win()
 		queue_redraw()
 		return
@@ -144,6 +200,9 @@ func _process(delta: float) -> void:
 		if dir.length_squared() > 1.0:
 			obs.pos += dir.normalized() * obs.speed * delta
 		if cursor.distance_to(obs.pos) < DRILL_RADIUS + obs.radius:
+			_drill_sound.stop()
+			_bg_music.stop()
+			_lose_sound.play()
 			lose()
 			queue_redraw()
 			return
@@ -186,6 +245,9 @@ func _draw() -> void:
 		else:
 			_draw_gum(obs.pos)
 
+	for effect in _pop_effects:
+		_draw_pop(effect)
+
 	var dcol: Color = COLOR_DRILL_ACT if any_drilling else COLOR_DRILL
 	draw_circle(cursor, DRILL_RADIUS, dcol)
 	var arm: float = DRILL_RADIUS * 2.5
@@ -207,6 +269,14 @@ func _draw_cavity(cavity: Dictionary, cursor: Vector2) -> void:
 		draw_arc(pos, CAVITY_RADIUS + 9.0,
 			-PI / 2.0, -PI / 2.0 + TAU * progress,
 			32, COLOR_PROGRESS, 4.0)
+
+## Briefly expanding, fading ring marking a freshly drilled cavity.
+func _draw_pop(effect: Dictionary) -> void:
+	var progress: float = effect.t / POP_DURATION
+	var radius: float = CAVITY_RADIUS * (1.0 + progress * 1.2)
+	var color: Color = COLOR_POP
+	color.a = 1.0 - progress
+	draw_arc(effect.pos, radius, 0.0, TAU, 32, color, 4.0)
 
 func _draw_gum(pos: Vector2) -> void:
 	# Shadow blob slightly larger and offset down-right
