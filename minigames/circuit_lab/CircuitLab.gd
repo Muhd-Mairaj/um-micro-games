@@ -188,14 +188,16 @@ func _choose(index: int) -> void:
 			_build_tray()
 			queue_redraw()
 		else:
-			# Every gap fixed — light it up and win.
+			# Every gap fixed — light it up and win immediately. GameManager's
+			# own RESULT_PAUSE_DURATION (0.9s) keeps this scene alive and
+			# _process running, so the bulb-lit animation still plays out —
+			# but a HUD timeout that lands in this window can no longer
+			# overwrite a completed circuit with a loss.
 			_play(_sfx_win)
 			_resolved = true
 			_lit = true
 			queue_redraw()
-			await get_tree().create_timer(0.8).timeout
-			if is_instance_valid(self):
-				win()
+			win()
 		return
 
 	# Wrong pick — lose (a short trap sparks harder).
