@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://jfmwxiqy4otq"]
+
+[ext_resource type="Script" uid="uid://dvd6cktj4a7k2" path="res://minigames/osu_um/scripts/ParticleBurst.gd" id="1_jtrfr"]
+
+[node name="ParticleBurst" type="Node2D" unique_id=389107295]
+script = ExtResource("1_jtrfr")

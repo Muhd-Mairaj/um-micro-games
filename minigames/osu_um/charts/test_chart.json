@@ -1,0 +1,19 @@
+{
+  "metadata": {
+    "title": "Campus Pixel March",
+    "artist": "FSK Stage Ensemble",
+    "bpm": 120,
+    "duration_ms": 10000
+  },
+  "circles": [
+    {"time_ms": 1000, "x": 300, "y": 300},
+    {"time_ms": 2000, "x": 500, "y": 400},
+    {"time_ms": 3000, "x": 700, "y": 250},
+    {"time_ms": 4000, "x": 400, "y": 500},
+    {"time_ms": 5000, "x": 600, "y": 350},
+    {"time_ms": 6000, "x": 800, "y": 450},
+    {"time_ms": 7000, "x": 350, "y": 550},
+    {"time_ms": 8000, "x": 650, "y": 200},
+    {"time_ms": 9000, "x": 900, "y": 300}
+  ]
+}

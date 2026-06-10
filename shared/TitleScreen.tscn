@@ -1,41 +1,37 @@
 [gd_scene format=3 uid="uid://b20itp2edhc23"]
 
 [ext_resource type="Script" uid="uid://br0lso5p7pshl" path="res://shared/TitleScreen.gd" id="1_kekg5"]
+[ext_resource type="Texture2D" uid="uid://cm4r7h043try4" path="res://assets/assets_opening/title_background.png" id="2_qmigo"]
+[ext_resource type="Texture2D" uid="uid://b3i1uu3fnbldw" path="res://assets/assets_opening/start_button.png" id="3_0vb65"]
 
 [node name="TitleScreen" type="CanvasLayer" unique_id=2004612744]
 layer = 5
 script = ExtResource("1_kekg5")
 
-[node name="ColorRect" type="ColorRect" parent="." unique_id=1221649809]
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-color = Color(0.078431375, 0.078431375, 0.14901961, 1)
+[node name="Background" type="Sprite2D" parent="." unique_id=1488519759]
+position = Vector2(578.9091, 327.57816)
+scale = Vector2(0.60321975, 0.5989294)
+texture = ExtResource("2_qmigo")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=475957467]
-custom_minimum_size = Vector2(600, 300)
+custom_minimum_size = Vector2(300, 100)
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -300.0
-offset_top = -150.0
-offset_right = 300.0
-offset_bottom = 150.0
+offset_left = -160.0
+offset_top = 186.0
+offset_right = 170.0
+offset_bottom = 303.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 32
 
-[node name="TitleLabel" type="Label" parent="VBoxContainer" unique_id=1839679267]
+[node name="StartButton" type="Button" parent="VBoxContainer" unique_id=789448684]
 layout_mode = 2
-theme_override_font_sizes/font_size = 42
-text = "Can You Graduate from UM?"
-horizontal_alignment = 1
+icon = ExtResource("3_0vb65")
+flat = true
 
-[node name="StartButton" type="Button" parent="VBoxContainer" unique_id=1169368460]
-custom_minimum_size = Vector2(300, 70)
-layout_mode = 2
-text = "Start"
+[connection signal="mouse_entered" from="VBoxContainer/StartButton" to="." method="_on_start_button_mouse_entered"]
+[connection signal="mouse_exited" from="VBoxContainer/StartButton" to="." method="_on_start_button_mouse_exited"]
