@@ -1,10 +1,28 @@
-[gd_scene format=3 uid="uid://dxr2tfoqjbe87"]
+[gd_scene load_steps=4 format=3 uid="uid://dxr2tfoqjbe87"]
 
 [ext_resource type="Script" uid="uid://dtxovxycd35gq" path="res://shared/GraduationScreen.gd" id="1_q6gss"]
+[ext_resource type="Texture2D" path="res://assets/PNG/Blue/Default/button_rectangle_depth_gradient.png" id="2_btn"]
+[ext_resource type="FontFile" uid="uid://c6hhsjjvmw2l5" path="res://assets/Font/Kenney Future.ttf" id="3_font"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_btn"]
+texture = ExtResource("2_btn")
+texture_margin_left = 24.0
+texture_margin_top = 20.0
+texture_margin_right = 24.0
+texture_margin_bottom = 24.0
 
 [node name="GraduationScreen" type="CanvasLayer" unique_id=1830793523]
 layer = 20
 script = ExtResource("1_q6gss")
+
+[node name="WinImage" type="TextureRect" parent="." unique_id=1733138594]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 1
+stretch_mode = 6
 
 [node name="ColorRect" type="ColorRect" parent="." unique_id=1733138593]
 anchors_preset = 15
@@ -12,7 +30,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.039215688, 0.12156863, 0.039215688, 1)
+color = Color(0, 0, 0, 0.45)
 
 [node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=288344261]
 custom_minimum_size = Vector2(700, 440)
@@ -31,23 +49,35 @@ theme_override_constants/separation = 24
 
 [node name="HeadlineLabel" type="Label" parent="VBoxContainer" unique_id=381184476]
 layout_mode = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 6
+theme_override_fonts/font = ExtResource("3_font")
 theme_override_font_sizes/font_size = 52
 text = "CONGRATULATIONS!"
 horizontal_alignment = 1
 
 [node name="GradeLabel" type="Label" parent="VBoxContainer" unique_id=1527267408]
 layout_mode = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 6
+theme_override_fonts/font = ExtResource("3_font")
 theme_override_font_sizes/font_size = 36
 horizontal_alignment = 1
 
 [node name="LivesLabel" type="Label" parent="VBoxContainer" unique_id=688790091]
 layout_mode = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 6
+theme_override_fonts/font = ExtResource("3_font")
 theme_override_font_sizes/font_size = 28
 horizontal_alignment = 1
 
 [node name="PlayAgainLabel" type="Label" parent="VBoxContainer" unique_id=2054229395]
 modulate = Color(1, 1, 1, 0.6)
 layout_mode = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_fonts/font = ExtResource("3_font")
 theme_override_font_sizes/font_size = 20
 text = "Play Again to chase First Class?"
 horizontal_alignment = 1
@@ -55,4 +85,8 @@ horizontal_alignment = 1
 [node name="PlayAgainButton" type="Button" parent="VBoxContainer" unique_id=837668125]
 custom_minimum_size = Vector2(280, 70)
 layout_mode = 2
+theme_override_fonts/font = ExtResource("3_font")
+theme_override_styles/normal = SubResource("StyleBoxTexture_btn")
+theme_override_styles/hover = SubResource("StyleBoxTexture_btn")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_btn")
 text = "Play Again"
