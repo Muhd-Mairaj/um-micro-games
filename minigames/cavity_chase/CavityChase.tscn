@@ -1,0 +1,7 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://minigames/cavity_chase/CavityChase.gd" id="1_cc"]
+
+[node name="CavityChase" type="Node2D"]
+script = ExtResource("1_cc")
+metadata/_custom_type_script = "uid://br4aefuxs5ay5"
