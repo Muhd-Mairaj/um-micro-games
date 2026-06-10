@@ -3,7 +3,7 @@ extends MiniGameBase
 var hurdle_scene = preload("res://minigames/hurdle_rush/Hurdle.tscn")
 
 const START_SPEED : float = 800.0
-const MAX_SPEED : float = 1200.0
+const MAX_SPEED : float = 1800.0
 var current_speed : float = START_SPEED
 
 var game_active : bool = false
@@ -15,14 +15,14 @@ var time_elapsed : float = 0.0
 @onready var lose_sound = $LoseSound
 
 func setup() -> void:
-	base_duration = 7.0
+	base_duration = 10.0
 	instruction_text = "Jump & survive!"
 	
 	game_active = true
 	runner.game_active = true
 	
-	# Start spawning hurdles
-	hurdle_timer.wait_time = randf_range(0.8, 1.2)
+	# Start spawning hurdles - initial gap is quite large
+	hurdle_timer.wait_time = 1.0
 	hurdle_timer.start()
 
 func _process(delta: float) -> void:
@@ -31,11 +31,10 @@ func _process(delta: float) -> void:
 		
 	time_elapsed += delta * time_scale
 	
-	# Speed up gradually
-	current_speed = min(START_SPEED + (time_elapsed * 50.0), MAX_SPEED)
+	# Speed up much more aggressively (150px per second)
+	current_speed = min(START_SPEED + (time_elapsed * 150.0), MAX_SPEED)
 	
-	# Move the parallax background. ParallaxBackground automatically handles scrolling 
-	# based on the ParallaxLayer's motion_mirroring, but we have to manually update its scroll_offset.
+	# Move the parallax background
 	bg.scroll_offset.x -= current_speed * delta * time_scale
 	
 	# Move active hurdles
@@ -45,7 +44,7 @@ func _process(delta: float) -> void:
 			if child.position.x < -100:
 				child.queue_free()
 				
-	# Win condition: survive the timer
+	# Win condition
 	if time_elapsed >= base_duration - 0.2 and not _finished:
 		_win_game()
 
@@ -53,17 +52,25 @@ func _on_hurdle_timer_timeout():
 	if not game_active:
 		return
 		
+	_spawn_hurdle()
+	
+	# Scaling chance of a "Double Hurdle" based on speed
+	# 10% chance at START_SPEED, up to 50% chance at MAX_SPEED
+	var double_chance = remap(current_speed, START_SPEED, MAX_SPEED, 0.1, 0.5)
+	if randf() < double_chance:
+		var quick_timer = get_tree().create_timer(0.3)
+		quick_timer.timeout.connect(_spawn_hurdle)
+	
+	# Randomize next spawn - gap gets smaller as you go faster
+	var spawn_rate = remap(current_speed, START_SPEED, MAX_SPEED, 1.2, 0.6)
+	hurdle_timer.wait_time = randf_range(spawn_rate, spawn_rate + 0.5) / time_scale
+
+func _spawn_hurdle():
+	if not game_active: return
 	var hurdle = hurdle_scene.instantiate()
-	
-	# Spawn off screen to the right, sitting on the floor (Y=550 is right above Floor at 600)
 	hurdle.position = Vector2(1400, 550)
-	
 	hurdle.hit_obstacle.connect(_on_obstacle_hit)
-	
 	add_child(hurdle)
-	
-	# Randomize next spawn
-	hurdle_timer.wait_time = randf_range(0.8, 1.6) / time_scale
 
 func _on_obstacle_hit():
 	if not game_active:
