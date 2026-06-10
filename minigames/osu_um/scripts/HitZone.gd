@@ -2,9 +2,10 @@ extends Node
 class_name HitZone
 
 # Timing windows in milliseconds (generous for casual rhythm gameplay).
-# Widened per review so on-beat clicks comfortably count as perfect, keeping the
-# weighted accuracy above the 60% pass line achievable for casual players.
-const PERFECT_WINDOW = 300    # ±300ms
+# Good/OK stay wide so casual players still clear the pass line; the PERFECT
+# window is tightened a little so a "perfect" demands the approach ring sit
+# closer to the circle (the best place) rather than just being on-beat.
+const PERFECT_WINDOW = 200    # ±200ms
 const GOOD_WINDOW = 500       # ±500ms
 const OK_WINDOW = 700         # ±700ms
 
