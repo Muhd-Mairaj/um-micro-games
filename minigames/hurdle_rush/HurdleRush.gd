@@ -10,16 +10,16 @@ var game_active : bool = false
 var time_elapsed : float = 0.0
 
 @onready var bg = $Bg
-@onready var dino = $Dino
+@onready var runner = $Runner
 @onready var hurdle_timer = $HurdleTimer
 @onready var lose_sound = $LoseSound
 
 func setup() -> void:
 	base_duration = 7.0
-	instruction_text = "Jump!"
+	instruction_text = "Jump & survive!"
 	
 	game_active = true
-	dino.game_active = true
+	runner.game_active = true
 	
 	# Start spawning hurdles
 	hurdle_timer.wait_time = randf_range(0.8, 1.2)
@@ -70,23 +70,23 @@ func _on_obstacle_hit():
 		return
 	
 	game_active = false
-	dino.game_active = false
+	runner.game_active = false
 	hurdle_timer.stop()
 	
 	lose_sound.play()
 	
 	# Knockback effect
-	dino.velocity.x = -400
-	dino.velocity.y = -600
+	runner.velocity.x = -400
+	runner.velocity.y = -600
 	
 	lose()
 
 func _win_game():
 	game_active = false
-	dino.game_active = false
+	runner.game_active = false
 	hurdle_timer.stop()
 	
 	# Sprint off screen
-	dino.velocity.x = 800
+	runner.velocity.x = 800
 	
 	win()
