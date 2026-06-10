@@ -2,23 +2,20 @@
 # shared/GameManager.gd
 # =============================================================================
 # PURPOSE:
-#   GameManager is the brain of the game. It:
-#     - Shuffles and sequences all mini-games
-#     - Injects the correct time_scale before each mini-game loads
-#     - Listens for game_won / game_lost signals and reacts
-#     - Increases speed every 3 games
-#     - Ends the run and shows the result screen
+#   GameManager is the state machine and brain of the game. It runs through:
+#     TITLE → INTRO → PLAYING → (DROPOUT | GRADUATION)
+#
+#   It shuffles and sequences mini-games, manages lives (3♥) and faculty
+#   progress (0/12), injects time_scale, and transitions to result screens.
 #
 # THIS IS THE STARTUP SCENE. Set GameManager.tscn as the Main Scene in:
 #   Project → Project Settings → Application → Run → Main Scene
 #
-# SCENE SETUP (build this in the Godot editor):
+# SCENE SETUP (already built - do not restructure):
 # -----------------------------------------------
-#   GameManager  (Node)                        <- root node, attach GameManager.gd
-#   ├── HUD      (instance of HUD.tscn)        <- drag HUD.tscn into the scene
-#   └── MiniGameContainer  (Node2D)            <- empty; games are added here at runtime
-#
-# Node names must match exactly (case-sensitive).
+#   GameManager  (Node)
+#   ├── HUD      (instance of HUD.tscn)
+#   └── MiniGameContainer  (Node2D)
 # =============================================================================
 
 extends Node
@@ -36,27 +33,20 @@ extends Node
 @onready var minigame_container: Node2D = $MiniGameContainer
 
 # ---------------------------------------------------------------------------
-# CONSTANTS — no magic numbers
+# CONSTANTS
 # ---------------------------------------------------------------------------
 
-## Amount added to time_scale every SPEED_STEP_INTERVAL games.
 const SPEED_INCREMENT: float = 0.15
-
-## Games between each speed increase.
 const SPEED_STEP_INTERVAL: int = 3
-
-## Seconds to wait after win/lose flash before loading the next game.
 const RESULT_PAUSE_DURATION: float = 0.9
+const STARTING_LIVES: int = 3
 
 # ---------------------------------------------------------------------------
 # MINI-GAME REGISTRY
 # THE STITCHER: In Week 12, add each finished mini-game path here.
-# Paths are case-sensitive on Linux/Mac. Must match the file on disk exactly.
 # ---------------------------------------------------------------------------
 var minigame_scenes: Array[String] = [
 	"res://minigames/syntax_saviour/SyntaxSaviour.tscn",
-	"res://minigames/virus_scanner/VirusScanner.tscn",
-	"res://minigames/lab_explosion/LabExplosion.tscn",
 	# --- THE STITCHER ADDS LINES HERE IN WEEK 12 ---
 ]
 
@@ -70,125 +60,184 @@ var current_index: int = 0
 ## Speed multiplier. Starts at 1.0, increases over time.
 ## actual_duration = base_duration / time_scale.
 var time_scale: float = 1.0
-
-## Games won this run.
-var score: int = 0
-
-## Total games in this run (for the result screen).
-var total_played: int = 0
-
-## The currently active mini-game instance.
+var lives: int = STARTING_LIVES
+var faculty_progress: int = 0
+var total_games: int = 0
 var current_minigame: MiniGameBase = null
+# Guard: true while a win/lose result is being processed. Prevents a second
+# signal from the same mini-game starting a concurrent _on_won/_on_lost coroutine.
+var _result_pending: bool = false
 
 # ---------------------------------------------------------------------------
 # LIFECYCLE
 # ---------------------------------------------------------------------------
 
 func _ready() -> void:
-	# Shuffle so each run plays games in a different order.
-	# shuffle() modifies the array in-place.
+	hud.visible = false
+	hud.timed_out.connect(_on_hud_timed_out)
+	_show_title_screen()
+
+func _on_hud_timed_out() -> void:
+	if current_minigame != null:
+		current_minigame.lose()
+
+# ---------------------------------------------------------------------------
+# SCREEN TRANSITIONS
+# Each helper loads a screen scene, adds it as a child, and connects its
+# signal. If the .tscn hasn't been built yet, it falls back gracefully.
+# ---------------------------------------------------------------------------
+
+func _show_title_screen() -> void:
+	var scene: PackedScene = load("res://shared/TitleScreen.tscn")
+	if scene == null:
+		# TitleScreen not built yet - skip straight to intro.
+		_show_intro_screen()
+		return
+	var screen: Node = scene.instantiate()
+	add_child(screen)
+	screen.started.connect(func():
+		screen.queue_free()
+		_show_intro_screen()
+	)
+
+func _show_intro_screen() -> void:
+	var scene: PackedScene = load("res://shared/IntroScreen.tscn")
+	if scene == null:
+		# IntroScreen not built yet - start immediately.
+		_start_game_loop()
+		return
+	var screen: Node = scene.instantiate()
+	add_child(screen)
+	screen.done.connect(func():
+		screen.queue_free()
+		_start_game_loop()
+	)
+
+func _show_dropout_screen() -> void:
+	hud.visible = false
+	var scene: PackedScene = load("res://shared/DropOutScreen.tscn")
+	if scene == null:
+		push_error("[GameManager] DROPOUT - no lives remaining. DropOutScreen.tscn not found.")
+		return
+	var screen: Node = scene.instantiate()
+	add_child(screen)
+	screen.play_again.connect(func():
+		screen.queue_free()
+		_show_intro_screen()
+	)
+
+func _show_graduation_screen() -> void:
+	hud.visible = false
+	var scene: PackedScene = load("res://shared/GraduationScreen.tscn")
+	if scene == null:
+		push_error("[GameManager] GRADUATION - GraduationScreen.tscn not found.")
+		return
+	var screen: Node = scene.instantiate()
+	# Set lives_remaining BEFORE add_child so setup() can read it.
+	screen.set("lives_remaining", lives)
+	add_child(screen)
+	screen.play_again.connect(func():
+		screen.queue_free()
+		_show_intro_screen()
+	)
+
+# ---------------------------------------------------------------------------
+# GAME LOOP
+# ---------------------------------------------------------------------------
+
+func _start_game_loop() -> void:
+	lives = STARTING_LIVES
+	faculty_progress = 0
+	time_scale = 1.0
+	current_index = 0
 	minigame_scenes.shuffle()
-
-	# Record total count for the final score screen.
-	total_played = minigame_scenes.size()
-
-	# Start the first game.
+	total_games = minigame_scenes.size()
+	hud.visible = true
+	hud.update_lives(lives)
+	hud.update_progress(faculty_progress, total_games)
 	_load_next_game()
 
-# ---------------------------------------------------------------------------
-# CORE FLOW
-# ---------------------------------------------------------------------------
-
-## Loads and starts the next mini-game, or ends the run if all are done.
 func _load_next_game() -> void:
-	# If we've played everything, show the result screen.
-	if current_index >= minigame_scenes.size():
-		_end_run()
+	# Loop instead of recursing so a run of bad entries can't overflow the stack.
+	while current_index < minigame_scenes.size():
+		var scene_path: String = minigame_scenes[current_index]
+		var scene_resource: PackedScene = load(scene_path)
+
+		if scene_resource == null:
+			push_error("[GameManager] Could not load scene: " + scene_path)
+			current_index += 1
+			continue
+
+		var instance: Node = scene_resource.instantiate()
+		current_minigame = instance as MiniGameBase
+
+		if current_minigame == null:
+			push_error("[GameManager] Scene does not extend MiniGameBase: " + scene_path)
+			instance.queue_free()
+			current_index += 1
+			continue
+
+		# Inject time_scale BEFORE adding to tree so setup() sees it.
+		_result_pending = false
+		current_minigame.time_scale = time_scale
+		minigame_container.add_child(current_minigame)
+		current_minigame.game_won.connect(_on_won)
+		current_minigame.game_lost.connect(_on_lost)
+		# Freeze game logic while instruction is shown, then start timer.
+		current_minigame.set_process(false)
+		current_minigame.set_physics_process(false)
+		hud.set_instruction(current_minigame.instruction_text)
+		await hud.show_get_ready(current_minigame.instruction_text)
+		if not is_instance_valid(current_minigame):
+			return
+		current_minigame.set_process(true)
+		current_minigame.set_physics_process(true)
+		hud.start(current_minigame.actual_duration())
 		return
 
-	var scene_path: String = minigame_scenes[current_index]
+	_end_run()
 
-	# load() (not preload()) so new scene paths can be added to the registry
-	# without any code changes in this file.
-	var scene_resource: PackedScene = load(scene_path)
-
-	# Safety: bad path → print error, skip this game.
-	if scene_resource == null:
-		push_error("[GameManager] Could not load scene: " + scene_path)
-		current_index += 1
-		_load_next_game()
-		return
-
-	# instantiate() is the Godot 4 equivalent of Godot 3's instance().
-	var instance: Node = scene_resource.instantiate()
-
-	# Cast to MiniGameBase for typed access to its properties.
-	current_minigame = instance as MiniGameBase
-
-	if current_minigame == null:
-		push_error("[GameManager] Scene does not extend MiniGameBase: " + scene_path)
-		instance.queue_free()
-		current_index += 1
-		_load_next_game()
-		return
-
-	# Inject time_scale BEFORE adding to the scene tree so setup() sees it.
-	current_minigame.time_scale = time_scale
-
-	# Add to the container so it becomes part of the scene tree.
-	minigame_container.add_child(current_minigame)
-
-	# Connect signals — GameManager reacts to win/lose from the mini-game.
-	current_minigame.game_won.connect(_on_won)
-	current_minigame.game_lost.connect(_on_lost)
-
-	# Start the HUD timer with the speed-adjusted duration.
-	hud.start(current_minigame.actual_duration())
-
-	# Show the instruction hint for this game.
-	hud.set_instruction(current_minigame.instruction_text)
-
-## Called when the active mini-game emits game_won.
 func _on_won() -> void:
-	score += 1
+	if _result_pending:
+		return
+	_result_pending = true
+	faculty_progress += 1
 	hud.show_result(true)
-	# await pauses this coroutine until the timer fires, without blocking other nodes.
+	hud.update_progress(faculty_progress, total_games)
 	await get_tree().create_timer(RESULT_PAUSE_DURATION).timeout
+	if not is_instance_valid(self):
+		return
 	_next()
 
-## Called when the active mini-game emits game_lost.
 func _on_lost() -> void:
+	if _result_pending:
+		return
+	_result_pending = true
+	lives -= 1
 	hud.show_result(false)
+	hud.update_lives(lives)
 	await get_tree().create_timer(RESULT_PAUSE_DURATION).timeout
-	_next()
+	if not is_instance_valid(self):
+		return
+	if lives <= 0:
+		_cleanup_current_minigame()
+		_show_dropout_screen()
+	else:
+		_next()
 
-## Cleans up the current mini-game, advances the counter, speeds up if needed,
-## then loads the next game.
 func _next() -> void:
-	# queue_free() defers deletion to the end of the frame (safer than free()).
-	if current_minigame != null:
-		current_minigame.queue_free()
-		current_minigame = null
-
+	_cleanup_current_minigame()
 	current_index += 1
-
-	# Speed up every SPEED_STEP_INTERVAL games.
-	# `%` is modulo — when remainder is 0, we've hit a step boundary.
 	if current_index % SPEED_STEP_INTERVAL == 0:
 		time_scale += SPEED_INCREMENT
 		print("[GameManager] Speed up! time_scale = ", time_scale)
-
 	_load_next_game()
 
-## Called after all mini-games have been played.
 func _end_run() -> void:
-	print("[GameManager] Run complete! Score: ", score, " / ", total_played)
+	# All games played with lives > 0 → graduation.
+	_show_graduation_screen()
 
-	# TODO (Week 12 / The Stitcher): Replace print with a real ResultScreen transition.
-	# Uncomment and adapt when ResultScreen.tscn is ready:
-	#
-	#   var result_scene = load("res://shared/ResultScreen.tscn").instantiate()
-	#   result_scene.set_score(score, total_played)
-	#   get_tree().root.add_child(result_scene)
-	#   queue_free()
-	pass
+func _cleanup_current_minigame() -> void:
+	if current_minigame != null:
+		current_minigame.queue_free()
+		current_minigame = null

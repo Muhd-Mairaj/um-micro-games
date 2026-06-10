@@ -23,7 +23,9 @@
 #
 # DO NOT:
 #   - Override _ready(). Override setup() instead.
-#   - Call win() or lose() more than once — the guard handles it, but avoid it.
+#   - Call win() or lose() inside setup(). GameManager connects signals after
+#     the scene enters the tree, so any emit during setup() will be missed.
+#   - Call win() or lose() more than once - the guard handles it, but avoid it.
 #   - Create your own timer. The HUD manages the countdown.
 #   - Call get_tree().change_scene_to_*(). GameManager handles transitions.
 # =============================================================================
