@@ -3,12 +3,12 @@
 # =============================================================================
 # PREMISE: The lecturer randomly glances at the student's desk.
 #   Hide the phone (tap it) before the lecturer catches you!
-#   Survive 3 glances to win. Lose all 3 lives to lose.
+#   Survive until the time runs out to win. One mistake = lose.
 #
 # STATE MACHINE:
 #   SAFE     → lecturer looks away, phone is visible, countdown to next glance
 #   WARNING  → lecturer is about to look (brief flash), may be a fakeout
-#   GLANCING → lecturer is actively looking — tap the phone NOW or lose a life
+#   GLANCING → lecturer is actively looking — tap the phone NOW or lose
 #
 # RULES:
 #   - extends MiniGameBase  (no own Timer nodes, no change_scene, one win/lose)
@@ -18,7 +18,7 @@
 extends MiniGameBase
 
 # ---------------------------------------------------------------------------
-# PRELOADED TEXTURES — loaded once at parse time for zero runtime stutter
+# PRELOADED TEXTURES
 # ---------------------------------------------------------------------------
 const TEX_LECTURER_SAFE    = preload("res://minigames/phone_down/assets/lecturer_safe.png")
 const TEX_LECTURER_WARNING = preload("res://minigames/phone_down/assets/lecturer_warning.png")
@@ -29,19 +29,15 @@ const TEX_PHONE_HIDDEN     = preload("res://minigames/phone_down/assets/phone_hi
 # ---------------------------------------------------------------------------
 # GAME SETTINGS
 # ---------------------------------------------------------------------------
-## How long (seconds) the GLANCING window lasts per difficulty step.
-var glance_durations: Array[float] = [1.2, 0.9, 0.6]
+## How long (seconds) the GLANCING window lasts. Gets shorter as time goes on.
+var glance_durations: Array[float] = [1.2, 0.9, 0.6, 0.5]
 
 ## How long the WARNING flash shows before resolving to GLANCING or fakeout.
 var warning_duration: float = 0.5
 
-## How many glances the player must survive to win.
-var glances_required: int = 3
-
 # ---------------------------------------------------------------------------
 # RUNTIME STATE
 # ---------------------------------------------------------------------------
-var lives: int = 3
 var glances_survived: int = 0
 var state: String = "SAFE"
 var state_timer: float = 0.0
@@ -62,39 +58,46 @@ var _flash_active: bool = false
 var _feedback_timer: float = 0.0
 var _feedback_active: bool = false
 
-## Delay before returning to SAFE after a successful tap, so phone_hidden.png
-## stays visible for a visible moment before the phone comes back out.
+## Delay before returning to SAFE after a successful tap.
 var _safe_delay_timer: float = 0.0
 var _awaiting_safe: bool = false
 
 # ---------------------------------------------------------------------------
-# NODE REFERENCES — @onready resolves after scene tree is built
+# NODE REFERENCES
 # ---------------------------------------------------------------------------
 @onready var lecturer: Sprite2D = $Lecturer
 @onready var student: Sprite2D = $Student
 @onready var phone: Sprite2D = $Phone
 @onready var background: TextureRect = $Background
 
-# UI nodes (all live under the UILayer CanvasLayer in the scene)
 @onready var ui_layer: CanvasLayer       = $UILayer
-@onready var lives_label: Label          = $UILayer/LivesLabel
-@onready var glances_label: Label        = $UILayer/GlancesLabel
 @onready var flash_overlay: ColorRect    = $UILayer/FlashOverlay
 @onready var feedback_label: Label       = $UILayer/FeedbackLabel
 @onready var audio_player: AudioStreamPlayer = $AudioPlayer
 
-# Sound files (from the 400 Sounds Pack)
+# Sound files
 const SFX_WARNING = preload("res://400 Sounds Pack/UI/sci_fi_hover.wav")
 const SFX_HIDE = preload("res://400 Sounds Pack/UI/sci_fi_confirm.wav")
 const SFX_CAUGHT = preload("res://400 Sounds Pack/Retro/lose.wav")
+
+# ---------------------------------------------------------------------------
+# SOLO TESTING
+# ---------------------------------------------------------------------------
+func _ready() -> void:
+	# Hide the old UI labels since we don't use local lives anymore
+	if has_node("UILayer/LivesLabel"):
+		$UILayer/LivesLabel.visible = false
+	if has_node("UILayer/GlancesLabel"):
+		$UILayer/GlancesLabel.visible = false
+	setup()
 
 # ---------------------------------------------------------------------------
 # MINIGAMEBASE CONTRACT
 # ---------------------------------------------------------------------------
 func setup() -> void:
 	base_duration = 10.0
-	instruction_text = "Hide your phone when the lecturer looks!"
-	next_glance_time = randf_range(1.5, 3.0)
+	instruction_text = "Hide your phone!"
+	next_glance_time = randf_range(1.5, 2.5)
 	game_active = true
 	_lecturer_origin = lecturer.position
 
@@ -103,7 +106,6 @@ func setup() -> void:
 	background.size = vp_size
 	background.stretch_mode = TextureRect.STRETCH_SCALE
 
-	_update_ui()
 	_apply_state()
 
 # ---------------------------------------------------------------------------
@@ -114,16 +116,20 @@ func _process(delta: float) -> void:
 	# shrinks along with the HUD's actual_duration() in later faculties.
 	delta *= time_scale
 
-	# ── Safe-return delay (lets phone_hidden texture show briefly) ──────────
+	# Check for natural survival win (10 seconds)
+	# The GameManager will call lose() if time runs out, but we want time out to mean WIN here.
+	# We will handle the win condition by checking the time elapsed if needed, or by overriding behavior.
+	# Actually, GameManager handles timeout. By default, GameManager calls lose() on timeout.
+	# To make it a survival game, we must manually trigger win() just before GameManager triggers timeout.
+	
 	if _awaiting_safe:
-		_safe_delay_timer -= delta
+		_safe_delay_timer -= delta * time_scale
 		if _safe_delay_timer <= 0.0:
 			_awaiting_safe = false
 			_set_state("SAFE")
 
-	# ── State machine ──────────────────────────────────────────────────────
 	if game_active:
-		state_timer += delta
+		state_timer += delta * time_scale
 		match state:
 			"SAFE":
 				if state_timer >= next_glance_time:
@@ -138,33 +144,28 @@ func _process(delta: float) -> void:
 			"GLANCING":
 				var duration: float = glance_durations[min(glances_survived, glance_durations.size() - 1)]
 				if state_timer >= duration:
-					_lose_life()
+					_lose_game("CAUGHT!")
 
-	# ── Lecturer shake ─────────────────────────────────────────────────────
+	# Effects...
 	if _is_shaking:
-		_shake_time += delta
+		_shake_time += delta * time_scale
 		if _shake_time < 0.5:
-			var offset := Vector2(
-				sin(_shake_time * 60.0) * 6.0,
-				cos(_shake_time * 55.0) * 3.0
-			)
+			var offset := Vector2(sin(_shake_time * 60.0) * 6.0, cos(_shake_time * 55.0) * 3.0)
 			lecturer.position = _lecturer_origin + offset
 		else:
 			lecturer.position = _lecturer_origin
 			_is_shaking = false
 			_shake_time = 0.0
 
-	# ── Screen flash fade-out ──────────────────────────────────────────────
 	if _flash_active:
-		_flash_alpha = max(0.0, _flash_alpha - delta * 3.0)
+		_flash_alpha = max(0.0, _flash_alpha - delta * 3.0 * time_scale)
 		flash_overlay.color = Color(1.0, 0.0, 0.0, _flash_alpha)
 		if _flash_alpha <= 0.0:
 			_flash_active = false
 			flash_overlay.visible = false
 
-	# ── Feedback label fade-out ────────────────────────────────────────────
 	if _feedback_active:
-		_feedback_timer -= delta
+		_feedback_timer -= delta * time_scale
 		var alpha := clampf(_feedback_timer / 0.3, 0.0, 1.0)
 		feedback_label.modulate.a = alpha
 		if _feedback_timer <= 0.0:
@@ -172,7 +173,7 @@ func _process(delta: float) -> void:
 			feedback_label.visible = false
 
 # ---------------------------------------------------------------------------
-# INPUT — tap the phone sprite
+# INPUT
 # ---------------------------------------------------------------------------
 func _input(event: InputEvent) -> void:
 	if not game_active:
@@ -183,71 +184,47 @@ func _input(event: InputEvent) -> void:
 		return
 
 	var click_pos: Vector2 = get_global_mouse_position()
-	var dist: float = click_pos.distance_to(phone.global_position)
-	if dist > 150:
+	if click_pos.distance_to(phone.global_position) > 150:
 		return
 
 	match state:
-
 		"GLANCING":
 			phone.texture = TEX_PHONE_HIDDEN
 			glances_survived += 1
 			_show_feedback("NICE!", Color(0.2, 1.0, 0.4))
-			
 			audio_player.stream = SFX_HIDE
 			audio_player.play()
-			
-			_update_ui()
-			
-			# Instantly exit the GLANCING state so _process() doesn't trigger _lose_life()
-			# due to the timer expiring while we are waiting for the safe delay.
 			state = "HIDDEN" 
-			
-			if glances_survived >= glances_required:
-				game_active = false
-				win()
-			else:
-				_awaiting_safe = true
-				_safe_delay_timer = 0.4
+			_awaiting_safe = true
+			_safe_delay_timer = 0.4
 
 		"SAFE":
-			lives -= 1
-			_show_feedback("TOO EARLY!", Color(1.0, 0.5, 0.0))
-			audio_player.stream = SFX_CAUGHT
-			audio_player.play()
-			_update_ui()
-			if lives <= 0:
-				game_active = false
-				lose()
-				return
-			_set_state("SAFE")
+			_lose_game("TOO EARLY!")
 
 		"WARNING":
-			lives -= 1
-			_show_feedback("WAIT!", Color(1.0, 1.0, 0.0))
-			audio_player.stream = SFX_CAUGHT
-			audio_player.play()
-			_update_ui()
-			if lives <= 0:
-				game_active = false
-				lose()
-				return
-			_set_state("SAFE")
+			_lose_game("WAIT!")
 
 # ---------------------------------------------------------------------------
-# LIFE MANAGEMENT — only called when lecturer catches the player (timeout)
+# LOSE CONDITION (One strike)
 # ---------------------------------------------------------------------------
-func _lose_life() -> void:
-	lives -= 1
-	_show_feedback("CAUGHT!", Color(1.0, 0.25, 0.25))
+func _lose_game(reason: String) -> void:
+	game_active = false
+	_show_feedback(reason, Color(1.0, 0.25, 0.25))
 	audio_player.stream = SFX_CAUGHT
 	audio_player.play()
-	_update_ui()
-	if lives <= 0:
+	lose()
+
+# Override the base lose() to handle timeouts as wins for survival mode.
+func lose() -> void:
+	if game_active:
+		# If game_active is still true, the player didn't make a mistake.
+		# This means GameManager called lose() because the global timer ran out.
+		# In a survival game, timing out means you win!
 		game_active = false
-		lose()
+		win()
 	else:
-		_set_state("SAFE")
+		# A genuine loss (player got caught or tapped wrong), let the base class handle it.
+		super.lose()
 
 # ---------------------------------------------------------------------------
 # STATE TRANSITIONS
@@ -258,7 +235,9 @@ func _set_state(new_state: String) -> void:
 	fakeout = false
 
 	if state == "SAFE":
-		next_glance_time = randf_range(1.5, 2.5)
+		# Make it slightly faster as they survive longer
+		var speed_up = min(glances_survived * 0.2, 1.0)
+		next_glance_time = randf_range(1.0 - speed_up, 2.5 - speed_up)
 		fakeout = randf() < 0.3
 
 	if state == "GLANCING":
@@ -297,16 +276,3 @@ func _show_feedback(text: String, color: Color) -> void:
 	feedback_label.visible = true
 	_feedback_timer = 1.0
 	_feedback_active = true
-
-# ---------------------------------------------------------------------------
-# UI UPDATE
-# ---------------------------------------------------------------------------
-func _update_ui() -> void:
-	var hearts := ""
-	for i in range(3):
-		if i < lives:
-			hearts += "❤️ "
-		else:
-			hearts += "🖤 "
-	lives_label.text = hearts.strip_edges()
-	glances_label.text = "Glances: %d / %d" % [glances_survived, glances_required]
