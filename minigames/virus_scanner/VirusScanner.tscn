@@ -1,0 +1,129 @@
+[gd_scene format=3 uid="uid://bvuaerhlp87f8"]
+
+[ext_resource type="Script" uid="uid://b7b6aebqhu31g" path="res://minigames/virus_scanner/VirusScanner.gd" id="1_glv2v"]
+[ext_resource type="Texture2D" uid="uid://cxdt8eru88r1n" path="res://assets/assets_virus_scanner/virus_scanner_background.png" id="2_fos0i"]
+[ext_resource type="FontFile" uid="uid://bgopf88k1hnm1" path="res://assets/Font/LuckiestGuy-Regular.ttf" id="3_c6i3y"]
+[ext_resource type="Texture2D" uid="uid://cnqe0erno3wur" path="res://assets/assets_virus_scanner/cell_background.png" id="3_cm0pq"]
+[ext_resource type="Texture2D" uid="uid://lae1jo3he30q" path="res://assets/assets_virus_scanner/virus.png" id="4_fos0i"]
+
+[sub_resource type="Theme" id="Theme_fos0i"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_cm0pq"]
+
+[sub_resource type="Theme" id="Theme_cm0pq"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_fos0i"]
+
+[node name="VirusScanner" type="Node2D" unique_id=1235387432]
+script = ExtResource("1_glv2v")
+
+[node name="Background" type="Sprite2D" parent="." unique_id=1241406094]
+position = Vector2(588.6, 326.50003)
+scale = Vector2(0.916279, 0.8372396)
+texture = ExtResource("2_fos0i")
+
+[node name="Blackbox" type="Sprite2D" parent="." unique_id=1122209852]
+position = Vector2(590, 420)
+scale = Vector2(0.02, 0.026)
+texture = ExtResource("3_cm0pq")
+
+[node name="Virus" type="Sprite2D" parent="." unique_id=149421244]
+position = Vector2(500, 0)
+scale = Vector2(0.1, 0.1)
+texture = ExtResource("4_fos0i")
+
+[node name="ScannerOverlay" type="ColorRect" parent="." unique_id=1033483952]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = SubResource("Theme_fos0i")
+color = Color(0, 0, 0, 1)
+
+[node name="UI" type="CanvasLayer" parent="." unique_id=1205463177]
+
+[node name="TopPanel" type="Panel" parent="UI" unique_id=2082351216]
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -76.0
+offset_top = 10.0
+offset_right = 64.0
+offset_bottom = 65.0
+grow_horizontal = 2
+theme_override_styles/panel = SubResource("StyleBoxEmpty_cm0pq")
+
+[node name="TopLabel" type="Label" parent="UI/TopPanel" unique_id=1649619794]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -24.0
+offset_top = 10.0
+offset_right = 16.0
+offset_bottom = 51.0
+grow_horizontal = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = ExtResource("3_c6i3y")
+theme_override_font_sizes/font_size = 40
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="InstructionPanel" type="Panel" parent="UI" unique_id=1818325972]
+visible = false
+clip_contents = true
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = 71.0
+offset_top = -142.0
+offset_right = 321.0
+offset_bottom = 58.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = SubResource("Theme_cm0pq")
+theme_override_styles/panel = SubResource("StyleBoxEmpty_fos0i")
+
+[node name="Instruction" type="Label" parent="UI/InstructionPanel" unique_id=206441968]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -200.5
+offset_top = 20.0
+offset_right = 200.5
+offset_bottom = 46.0
+grow_horizontal = 2
+theme_override_fonts/font = ExtResource("3_c6i3y")
+theme_override_font_sizes/font_size = 25
+text = "DRAG THIS CIRCLE 
+TO FIND THIS VIRUS"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="LiquidContainer" type="HBoxContainer" parent="UI/InstructionPanel" unique_id=779020547]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -1.0
+offset_top = 30.0
+offset_right = 299.0
+offset_bottom = 110.0
+grow_horizontal = 2
+grow_vertical = 2
+alignment = 2
+
+[node name="Sprite2D" type="Sprite2D" parent="UI/InstructionPanel/LiquidContainer" unique_id=1049894051]
+scale = Vector2(0.3, 0.3)
+texture = ExtResource("4_fos0i")
+
+[node name="GameTimer" type="Timer" parent="." unique_id=1640101175]
+wait_time = 20.0
+one_shot = true

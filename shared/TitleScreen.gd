@@ -33,3 +33,10 @@ signal started
 
 func _ready() -> void:
 	start_button.pressed.connect(func(): started.emit())
+	start_button.pivot_offset = start_button.size / 2
+	
+func _on_start_button_mouse_entered() -> void:
+	start_button.scale = Vector2(0.95, 0.95)
+
+func _on_start_button_mouse_exited() -> void:
+	start_button.scale = Vector2.ONE
