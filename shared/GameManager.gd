@@ -54,8 +54,8 @@ var minigame_scenes: Array[String] = [
 	"res://minigames/lab_explosion/LabExplosion.tscn",
 	"res://minigames/catch_the_cash/CatchTheCash.tscn",
 	"res://minigames/order_in_the_court/OrderInTheCourt.tscn",
-	# "res://minigames/hurdle_rush/HurdleRush.tscn",
-	# "res://minigames/phone_down/PhoneDown.tscn",
+	"res://minigames/hurdle_rush/HurdleRush.tscn",
+	"res://minigames/phone_down/PhoneDown.tscn",
 	# "res://minigames/slipper_hunt/SlipperHunt.tscn",
 	# "res://minigames/sprint_start/SprintStart.tscn",
 	# --- THE STITCHER ADDS LINES HERE IN WEEK 12 ---
