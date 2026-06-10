@@ -1,187 +1,394 @@
 # =============================================================================
-# minigames/syntax_saviour/SyntaxSaviour.gd
+# minigames/syntax_saviour/SyntaxSaviour.gd   (redesigned)
 # =============================================================================
-# FACULTY: Faculty of Computer Science & Information Technology
-# PREMISE: A short Python snippet is shown with one deliberate syntax error.
-#          Three buttons show candidate fixes/lines. Tap the correct (buggy) line
-#          to win; tap a distractor to lose.
+# FACULTY: Faculty of Computer Science & Information Technology (FCSIT)
+# PREMISE: Three rounds of broken Java code appear on a FCSIT lab monitor.
+#          Each round: tap the buggy line before time runs out.
+#          Wrong tap or timeout = immediate loss. Complete all 3 = win.
 #
-# SCENE SETUP (build this in the Godot editor):
-# -----------------------------------------------
-#   SyntaxSaviour  (Node2D)                    <- root, attach SyntaxSaviour.gd
-#   └── ColorRect  (background)                <- fills viewport
-#         Color: Color(0.118, 0.118, 0.180, 1) = #1E1E2E  (VSCode dark theme)
-#         Anchor Preset: Full Rect
-#   └── VBoxContainer  (main layout)
-#         Anchor Preset: Full Rect
-#         margin: 40px all sides (use theme_override or offset)
-#         └── TitleLabel  (Label)              <- "Spot the bug!"
-#               horizontal_alignment: CENTER
-#               font_size override: 28
-#         └── CodeDisplay  (RichTextLabel)     <- shows the Python snippet
-#               name must be exactly "CodeDisplay"
-#               bbcode_enabled: true
-#               fit_content: true
-#               custom_minimum_size: (0, 220)
-#         └── HBoxContainer  (button row)
-#               alignment: CENTER
-#               ├── ChoiceButton0  (Button)    <- names must be exactly these
-#               ├── ChoiceButton1  (Button)
-#               └── ChoiceButton2  (Button)
-#                     Each button:
-#                       custom_minimum_size: (280, 70)
-#                       clip_text: true
+# SCENE SETUP (build in the Godot editor — see implementation plan):
+# ─────────────────────────────────────────────────────────────────
+#  SyntaxSaviour  (Node2D)              ← root — attach SyntaxSaviour.gd
+#  ├── LabBackground  (TextureRect)
+#  │     Anchor Preset: Full Rect
+#  │     Texture: res://minigames/syntax_saviour/assets/lab_bg.png
+#  │     Stretch Mode: Keep Aspect Covered
+#  └── MonitorPanel  (Panel)
+#        Anchor Preset: Full Rect
+#        Offset Left: 60   Offset Top: 40
+#        Offset Right: -60  Offset Bottom: -40
+#        └── Layout  (VBoxContainer)
+#              Anchor Preset: Full Rect
+#              Offset Left: 10  Top: 10  Right: -10  Bottom: -10
+#              ├── TabBar  (Label)
+#              │     Horizontal Alignment: CENTER
+#              │     Theme Override > Font Size: 14
+#              └── CodeLines  (VBoxContainer)
+#                    Size Flags > Vertical: Expand + Fill
 # =============================================================================
 
 extends MiniGameBase
 
 # ---------------------------------------------------------------------------
-# CONSTANTS
+# SNIPPET POOLS
+# Each entry: "lines" = Array of code line strings
+#             "buggy" = 0-based index of the buggy line
 # ---------------------------------------------------------------------------
 
-## Background colour matching VSCode's default dark theme.
-const BG_COLOR: Color = Color(0.118, 0.118, 0.180, 1.0)   # #1E1E2E
-
-## Highlight colour used in BBCode to mark the error line in the snippet.
-const ERROR_LINE_COLOR: String = "#FF6B6B"
-
-## Button normal background colour (dark panel).
-const BTN_COLOR_NORMAL: Color = Color(0.18, 0.18, 0.26, 1.0)
-
-## Button highlight colour for the selected answer (set after outcome).
-const BTN_COLOR_CORRECT: Color = Color(0.1, 0.7, 0.3, 1.0)
-const BTN_COLOR_WRONG:   Color = Color(0.75, 0.1, 0.1, 1.0)
-
-# ---------------------------------------------------------------------------
-# SNIPPET LIBRARY
-# Each entry is a Dictionary:
-#   "code"        : BBCode string shown in CodeDisplay (highlight bug line in red)
-#   "options"     : Array[String] of 3 button labels (one correct, two distractors)
-#   "correct_idx" : Which index in options[] is the correct (buggy) answer
-# ---------------------------------------------------------------------------
-const SNIPPETS: Array = [
+const POOL_1: Array = [
 	{
-		"code": (
-			"[color=#9CDCFE]def[/color] [color=#DCDCAA]greet[/color](name):\n"
-			+ "    [color=#9CDCFE]print[/color]([color=#CE9178]\"Hello, \"[/color] + name)\n"
-			+ "[color=%s]    return \"Done\"[/color]\n"                         # missing colon on def — shown below
-			+ "\n[color=#9CDCFE]greet[/color]([color=#CE9178]\"World\"[/color])"
-		) % ERROR_LINE_COLOR,
-		# The real error is on line 1: `def greet(name)` is missing a colon.
-		# We present the OPTIONS as line labels so the player picks the buggy line.
-		"options": ["Line 1: def greet(name)", "Line 2: print(...)", "Line 4: greet(\"World\")"],
-		"correct_idx": 0,
-		# Explanation shown in button tooltip (optional — editor can add later).
-		"hint": "Missing colon after the function definition."
+		"lines": [
+			"public class Main {",
+			"    public static void main(String[] args) {",
+			"        int x = 10",
+			"        System.out.println(x);",
+			"    }",
+			"}",
+		],
+		"buggy": 2,
 	},
 	{
-		"code": (
-			"[color=#9CDCFE]for[/color] i [color=#9CDCFE]in[/color] [color=#DCDCAA]range[/color](5):\n"
-			+ "[color=%s]print(i)[/color]\n"                                   # missing indentation
-			+ "[color=#9CDCFE]if[/color] i == 4:\n"
-			+ "    [color=#9CDCFE]print[/color]([color=#CE9178]\"done\"[/color])"
-		) % ERROR_LINE_COLOR,
-		"options": ["Line 2: print(i)", "Line 3: if i == 4:", "Line 1: for i in range(5):"],
-		"correct_idx": 0,
-		"hint": "print(i) is not indented inside the for loop."
+		"lines": [
+			"public class Main {",
+			"    public static void main(String[] args) {",
+			"        String name = \"Alice\";",
+			"        System.out.println(name)",
+			"    }",
+			"}",
+		],
+		"buggy": 3,
 	},
 	{
-		"code": (
-			"[color=#9CDCFE]def[/color] [color=#DCDCAA]add[/color](a, b):\n"
-			+ "    [color=#9CDCFE]return[/color] a + b\n"
-			+ "\n"
-			+ "[color=%s]result = add(2 3)[/color]\n"                          # missing comma
-			+ "[color=#9CDCFE]print[/color](result)"
-		) % ERROR_LINE_COLOR,
-		"options": ["Line 4: result = add(2 3)", "Line 2: return a + b", "Line 5: print(result)"],
-		"correct_idx": 0,
-		"hint": "Missing comma between arguments: add(2, 3)."
+		"lines": [
+			"public class Main {",
+			"    public static void main(String[] args) {",
+			"        int[] arr = new int[5;",
+			"        arr[0] = 42;",
+			"    }",
+			"}",
+		],
+		"buggy": 2,
+	},
+	{
+		"lines": [
+			"public class Main {",
+			"    public static void main(String[] args) {",
+			"        int a = 3;",
+			"        int b = 4;",
+			"        System.out.println(a + b)",
+			"    }",
+			"}",
+		],
+		"buggy": 4,
+	},
+]
+
+const POOL_2: Array = [
+	{
+		"lines": [
+			"public class Main {",
+			"    public static void main(String[] args) {",
+			"        String count = 5;",
+			"        System.out.println(count);",
+			"    }",
+			"}",
+		],
+		"buggy": 2,
+	},
+	{
+		"lines": [
+			"public class Main {",
+			"    public static void main(String[] args) {",
+			"        int x = 10;",
+			"        if (x = 10) {",
+			"            System.out.println(\"ten\");",
+			"        }",
+			"    }",
+			"}",
+		],
+		"buggy": 3,
+	},
+	{
+		"lines": [
+			"public class Main {",
+			"    public static void main(String[] args) {",
+			"        int x = \"hello\";",
+			"        System.out.println(x);",
+			"    }",
+			"}",
+		],
+		"buggy": 2,
+	},
+	{
+		"lines": [
+			"public class Main {",
+			"    public static void main(String[] args) {",
+			"        boolean flag = 1;",
+			"        System.out.println(flag);",
+			"    }",
+			"}",
+		],
+		"buggy": 2,
+	},
+]
+
+const POOL_3: Array = [
+	{
+		"lines": [
+			"public class Main {",
+			"    public static void main(String[] args) {",
+			"        int[] arr = {1, 2, 3};",
+			"        for (int i = 0; i <= arr.length; i++) {",
+			"            System.out.println(arr[i]);",
+			"        }",
+			"    }",
+			"}",
+		],
+		"buggy": 3,
+	},
+	{
+		"lines": [
+			"public static int add(int a, int b) {",
+			"    int result = 0;",
+			"    return result;",
+			"    result = a + b;",
+			"}",
+		],
+		"buggy": 2,
+	},
+	{
+		"lines": [
+			"public class Main {",
+			"    public static void main(String[] args) {",
+			"        int n = 5; int sum = 0;",
+			"        for (int i = 1; i <= n; i++) {",
+			"            sum = sum - i;",
+			"        }",
+			"        System.out.println(sum);",
+			"    }",
+			"}",
+		],
+		"buggy": 4,
+	},
+	{
+		"lines": [
+			"public class Main {",
+			"    static boolean isEven(int n) {",
+			"        return n % 2 == 1;",
+			"    }",
+			"    public static void main(String[] args) {",
+			"        System.out.println(isEven(4));",
+			"    }",
+			"}",
+		],
+		"buggy": 2,
 	},
 ]
 
 # ---------------------------------------------------------------------------
-# RUNTIME STATE
+# COLORS
 # ---------------------------------------------------------------------------
 
-## Index of the snippet chosen for this round.
-var _snippet_index: int = 0
-
-## Which button index (0–2) holds the correct answer THIS round.
-## Shuffled in setup() so the correct button isn't always the same.
-var _correct_button_index: int = 0
-
-## Cached button node references, filled in setup().
-var _buttons: Array[Button] = []
+const COLOR_CORRECT: Color = Color(0.1, 0.55, 0.25, 1.0)
+const COLOR_WRONG:   Color = Color(0.55, 0.1, 0.1, 1.0)
 
 # ---------------------------------------------------------------------------
-# NODE REFERENCES
+# STATE
 # ---------------------------------------------------------------------------
 
-@onready var code_display: RichTextLabel = $VBoxContainer/CodeDisplay
-@onready var choice_button_0: Button = $VBoxContainer/HBoxContainer/ChoiceButton0
-@onready var choice_button_1: Button = $VBoxContainer/HBoxContainer/ChoiceButton1
-@onready var choice_button_2: Button = $VBoxContainer/HBoxContainer/ChoiceButton2
+var _current_round: int = 0
+var _rounds: Array = []
+
+# ---------------------------------------------------------------------------
+# NODE REFS  (paths must match the scene node tree)
+# ---------------------------------------------------------------------------
+
+@onready var tab_bar: Label = $UI/MonitorPanel/Layout/TabBar
+@onready var code_lines: VBoxContainer = $UI/MonitorPanel/Layout/CodeLines
+
+# ---------------------------------------------------------------------------
+# SYNTAX HIGHLIGHT COLORS (VS Code "Dark+" inspired) & ROW BACKGROUND
+# ---------------------------------------------------------------------------
+
+const COLOR_ROW_BG:   Color  = Color(0.118, 0.118, 0.18, 1.0)
+const COLOR_LINE_NUM: String = "#6a8759"
+const COLOR_KEYWORD:  String = "#569cd6"
+const COLOR_TYPE:     String = "#4ec9b0"
+const COLOR_STRING_TK: String = "#ce9178"
+const COLOR_NUMBER:   String = "#b5cea8"
+const COLOR_DEFAULT:  String = "#d4d4d4"
+
+const KEYWORDS: Array = ["public", "static", "void", "class", "return", "new", "if", "for", "while", "else", "do"]
+const TYPES: Array = ["int", "String", "boolean", "double", "char", "float", "long"]
+
+# ---------------------------------------------------------------------------
+# AUDIO
+# ---------------------------------------------------------------------------
+
+var _tap_sound: AudioStreamPlayer
+var _win_sound: AudioStreamPlayer
+var _lose_sound: AudioStreamPlayer
+var _bg_music: AudioStreamPlayer
 
 # ---------------------------------------------------------------------------
 # MINIGAMEBASE CONTRACT
 # ---------------------------------------------------------------------------
 
 func setup() -> void:
-	# How long the player has to spot the bug.
-	base_duration = 7.0
+	base_duration = 15.0
+	instruction_text = "Tap the buggy line!"
+	_rounds = [
+		POOL_1[randi() % POOL_1.size()],
+		POOL_2[randi() % POOL_2.size()],
+		POOL_3[randi() % POOL_3.size()],
+	]
+	_current_round = 0
 
-	# One-line hint shown in the HUD above the scene.
-	instruction_text = "Find the syntax error!"
+	var header_font := load("res://assets/Font/Kenney Future.ttf")
+	tab_bar.add_theme_font_override("font", header_font)
+	tab_bar.add_theme_font_size_override("font_size", 20)
+	tab_bar.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.6))
+	tab_bar.add_theme_constant_override("shadow_offset_x", 2)
+	tab_bar.add_theme_constant_override("shadow_offset_y", 2)
 
-	# Collect button references into an array for easy indexed access.
-	_buttons = [choice_button_0, choice_button_1, choice_button_2]
+	_tap_sound = AudioStreamPlayer.new()
+	_tap_sound.stream = load("res://400 Sounds Pack/UI/select_1.wav")
+	add_child(_tap_sound)
 
-	# Pick a random snippet from the library.
-	_snippet_index = randi() % SNIPPETS.size()
-	var snippet: Dictionary = SNIPPETS[_snippet_index]
+	_win_sound = AudioStreamPlayer.new()
+	_win_sound.stream = load("res://win v1.0.wav")
+	add_child(_win_sound)
 
-	# Display the code with BBCode colouring.
-	code_display.text = snippet["code"]
+	_lose_sound = AudioStreamPlayer.new()
+	_lose_sound.stream = load("res://lose v1.0.wav")
+	add_child(_lose_sound)
 
-	# The snippet defines which option is "correct" at index correct_idx.
-	# We now shuffle the button assignment so the correct answer isn't always
-	# the same button position each time.
-	var original_correct: int = snippet["correct_idx"]
-	var option_labels: Array = snippet["options"].duplicate()   # copy so we can reorder
+	_bg_music = AudioStreamPlayer.new()
+	_bg_music.stream = load("res://400 Sounds Pack/Musical Effects/music_box_mystery.wav")
+	_bg_music.volume_db = -8.0
+	_bg_music.finished.connect(func(): _bg_music.play())
+	add_child(_bg_music)
+	_bg_music.play()
 
-	# Generate a random permutation of [0, 1, 2].
-	var perm: Array[int] = [0, 1, 2]
-	perm.shuffle()
+	_load_round(0)
 
-	# Apply the permutation: perm[i] is which original option goes on button i.
-	_correct_button_index = -1
-	for i in range(3):
-		var original_option_index: int = perm[i]
-		_buttons[i].text = option_labels[original_option_index]
-		# If this button is displaying the original correct option, record it.
-		if original_option_index == original_correct:
-			_correct_button_index = i
+func _load_round(round_index: int) -> void:
+	tab_bar.text = "SyntaxSaviour.java  —  Round %d / 3" % (round_index + 1)
+	for child in code_lines.get_children():
+		child.queue_free()
+	var lines: Array = _rounds[round_index]["lines"]
+	var mono_font := SystemFont.new()
+	mono_font.font_names = PackedStringArray(["Courier New", "Courier", "monospace"])
 
-	# Connect each button's pressed signal to a handler that knows its index.
-	# We use a lambda (anonymous function) to capture `i` by value.
-	for i in range(3):
-		var btn: Button = _buttons[i]
-		var captured_i: int = i   # Capture the current value of i in this closure.
-		btn.pressed.connect(func(): _on_button_pressed(captured_i))
+	var row_sb := StyleBoxFlat.new()
+	row_sb.bg_color = COLOR_ROW_BG
+	var hover_sb := StyleBoxFlat.new()
+	hover_sb.bg_color = COLOR_ROW_BG.lightened(0.15)
 
-## Called when any of the three buttons is tapped.
-func _on_button_pressed(button_index: int) -> void:
-	# Disable all buttons to prevent double-input while result flashes.
-	for btn in _buttons:
-		btn.disabled = true
+	for i in range(lines.size()):
+		var btn := Button.new()
+		btn.text = ""
+		btn.custom_minimum_size = Vector2(0, 28)
+		btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		btn.add_theme_stylebox_override("normal", row_sb)
+		btn.add_theme_stylebox_override("disabled", row_sb)
+		btn.add_theme_stylebox_override("hover", hover_sb)
+		var captured_i: int = i
+		btn.pressed.connect(func(): _on_line_pressed(captured_i))
 
-	if button_index == _correct_button_index:
-		# Correct! Highlight the button green and win.
-		_buttons[button_index].add_theme_color_override("font_color", BTN_COLOR_CORRECT)
-		win()
+		var rtl := RichTextLabel.new()
+		rtl.bbcode_enabled = true
+		rtl.scroll_active = false
+		rtl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		rtl.add_theme_font_override("normal_font", mono_font)
+		rtl.add_theme_font_override("bold_font", mono_font)
+		rtl.add_theme_font_size_override("normal_font_size", 16)
+		rtl.set_anchors_preset(Control.PRESET_FULL_RECT)
+		rtl.offset_left = 6
+		rtl.text = "[color=%s]  %d   [/color]%s" % [COLOR_LINE_NUM, i + 1, _highlight_line(lines[i])]
+		btn.add_child(rtl)
+
+		code_lines.add_child(btn)
+
+## Wraps Java keywords/types/strings/numbers in BBCode color tags for a
+## VS Code-style syntax-highlighted look inside the RichTextLabel overlay.
+func _highlight_line(line: String) -> String:
+	var token_re := RegEx.new()
+	token_re.compile("(\"[^\"]*\")|(\\b\\d+\\b)|(\\b[A-Za-z_][A-Za-z0-9_]*\\b)")
+	var result := ""
+	var last_end := 0
+	for m in token_re.search_all(line):
+		result += _escape_bbcode(line.substr(last_end, m.get_start() - last_end))
+		var token: String = m.get_string()
+		var color: String = COLOR_DEFAULT
+		if token.begins_with("\""):
+			color = COLOR_STRING_TK
+		elif token.is_valid_int():
+			color = COLOR_NUMBER
+		elif token in KEYWORDS:
+			color = COLOR_KEYWORD
+		elif token in TYPES:
+			color = COLOR_TYPE
+		if color == COLOR_DEFAULT:
+			result += _escape_bbcode(token)
+		else:
+			result += "[color=%s]%s[/color]" % [color, _escape_bbcode(token)]
+		last_end = m.get_end()
+	result += _escape_bbcode(line.substr(last_end))
+	return result
+
+## Escapes BBCode-significant brackets so literal "[]" in Java arrays display correctly.
+func _escape_bbcode(s: String) -> String:
+	return s.replace("[", "[lb]").replace("]", "[rb]")
+
+func _on_line_pressed(line_index: int) -> void:
+	for child in code_lines.get_children():
+		child.disabled = true
+	_tap_sound.play()
+	var is_correct: bool = (line_index == _rounds[_current_round]["buggy"])
+	var btn: Button = code_lines.get_child(line_index)
+	if is_correct:
+		_tint_button(btn, COLOR_CORRECT)
+		_punch(btn)
+		await get_tree().create_timer(0.5).timeout
+		if _finished or not is_instance_valid(self):
+			return
+		_current_round += 1
+		if _current_round >= _rounds.size():
+			_bg_music.stop()
+			_win_sound.play()
+			win()
+		else:
+			_load_round(_current_round)
 	else:
-		# Wrong choice. Highlight red and lose.
-		_buttons[button_index].add_theme_color_override("font_color", BTN_COLOR_WRONG)
-		# Also reveal the correct button in green so the player learns.
-		_buttons[_correct_button_index].add_theme_color_override("font_color", BTN_COLOR_CORRECT)
+		_tint_button(btn, COLOR_WRONG)
+		_shake(btn)
+		_bg_music.stop()
+		_lose_sound.play()
+		await get_tree().create_timer(0.3).timeout
+		if _finished or not is_instance_valid(self):
+			return
 		lose()
+
+func _tint_button(btn: Button, color: Color) -> void:
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = color
+	btn.add_theme_stylebox_override("normal", sb)
+	btn.add_theme_stylebox_override("disabled", sb)
+
+## Quick scale "pop" to celebrate a correct tap.
+func _punch(btn: Button) -> void:
+	btn.pivot_offset = btn.size / 2.0
+	var tween := create_tween()
+	tween.tween_property(btn, "scale", Vector2(1.08, 1.08), 0.1) \
+		.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
+	tween.tween_property(btn, "scale", Vector2.ONE, 0.15) \
+		.set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_BACK)
+
+## Horizontal shake to call out a wrong tap.
+func _shake(btn: Button) -> void:
+	var origin_x: float = btn.position.x
+	var tween := create_tween()
+	for offset in [8.0, -8.0, 5.0, -5.0, 0.0]:
+		tween.tween_property(btn, "position:x", origin_x + offset, 0.05) \
+			.set_trans(Tween.TRANS_SINE)

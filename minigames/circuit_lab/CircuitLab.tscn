@@ -1,0 +1,6 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://minigames/circuit_lab/CircuitLab.gd" id="1_circuit"]
+
+[node name="CircuitLab" type="Node2D"]
+script = ExtResource("1_circuit")

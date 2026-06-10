@@ -1,0 +1,51 @@
+[gd_scene format=3]
+
+[ext_resource type="Texture2D" path="res://minigames/hurdle_rush/assets/cinematic_sky.png" id="1_sky"]
+[ext_resource type="Texture2D" path="res://minigames/hurdle_rush/assets/stadium.png" id="2_stadium"]
+[ext_resource type="Texture2D" path="res://minigames/hurdle_rush/assets/track.png" id="3_track"]
+[ext_resource type="Texture2D" path="res://minigames/hurdle_rush/assets/fence.png" id="4_fence"]
+
+[node name="Bg" type="ParallaxBackground"]
+
+[node name="SkyLayer" type="ParallaxLayer" parent="."]
+motion_scale = Vector2(0.1, 1)
+motion_mirroring = Vector2(1280, 0)
+
+[node name="TextureRect" type="TextureRect" parent="SkyLayer"]
+offset_right = 1280.0
+offset_bottom = 720.0
+texture = ExtResource("1_sky")
+expand_mode = 1
+
+[node name="StadiumLayer" type="ParallaxLayer" parent="."]
+motion_scale = Vector2(0.5, 1)
+motion_mirroring = Vector2(1280, 0)
+
+[node name="TextureRect" type="TextureRect" parent="StadiumLayer"]
+offset_top = 220.0
+offset_right = 1280.0
+offset_bottom = 700.0
+texture = ExtResource("2_stadium")
+expand_mode = 1
+
+[node name="TrackLayer" type="ParallaxLayer" parent="."]
+motion_mirroring = Vector2(1280, 0)
+
+[node name="TextureRect" type="TextureRect" parent="TrackLayer"]
+offset_top = 450.0
+offset_right = 1280.0
+offset_bottom = 720.0
+texture = ExtResource("3_track")
+expand_mode = 1
+
+[node name="ForegroundLayer" type="ParallaxLayer" parent="."]
+motion_scale = Vector2(1.2, 1)
+motion_mirroring = Vector2(1280, 0)
+
+[node name="Fence" type="TextureRect" parent="ForegroundLayer"]
+modulate = Color(0.3, 0.3, 0.3, 1)
+offset_top = 620.0
+offset_right = 1280.0
+offset_bottom = 720.0
+texture = ExtResource("4_fence")
+stretch_mode = 1

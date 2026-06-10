@@ -46,8 +46,23 @@ const STARTING_LIVES: int = 3
 # THE STITCHER: In Week 12, add each finished mini-game path here.
 # ---------------------------------------------------------------------------
 var minigame_scenes: Array[String] = [
+<<<<<<< HEAD
 	"res://minigames/bas_um_model_crush/BasUmModelCrush.tscn",
 	#"res://minigames/syntax_saviour/SyntaxSaviour.tscn",
+=======
+	"res://minigames/syntax_saviour/SyntaxSaviour.tscn",
+	"res://minigames/cavity_chase/CavityChase.tscn",
+	"res://minigames/osu_um/OsuGame.tscn",
+	"res://minigames/circuit_lab/CircuitLab.tscn",
+	"res://minigames/virus_scanner/VirusScanner.tscn",
+	"res://minigames/lab_explosion/LabExplosion.tscn",
+	"res://minigames/catch_the_cash/CatchTheCash.tscn",
+	"res://minigames/order_in_the_court/OrderInTheCourt.tscn",
+	"res://minigames/hurdle_rush/HurdleRush.tscn",
+	"res://minigames/phone_down/PhoneDown.tscn",
+	# "res://minigames/slipper_hunt/SlipperHunt.tscn",
+	# "res://minigames/sprint_start/SprintStart.tscn",
+>>>>>>> e42b2b41bee6795aff3e8741ff2e1d3cdc37c0db
 	# --- THE STITCHER ADDS LINES HERE IN WEEK 12 ---
 ]
 
