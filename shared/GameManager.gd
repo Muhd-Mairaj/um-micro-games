@@ -49,6 +49,7 @@ var minigame_scenes: Array[String] = [
 	"res://minigames/syntax_saviour/SyntaxSaviour.tscn",
   "res://minigames/cavity_chase/CavityChase.tscn",
 	"res://minigames/osu_um/OsuGame.tscn",
+	"res://minigames/circuit_lab/CircuitLab.tscn",
 	# --- THE STITCHER ADDS LINES HERE IN WEEK 12 ---
 ]
 

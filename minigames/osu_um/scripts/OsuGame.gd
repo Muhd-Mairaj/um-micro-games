@@ -14,6 +14,11 @@ const STAGE_TEXTURE_PATH := "res://minigames/osu_um/theater-stage-with-red-curta
 # Preloaded once instead of load()-ing on every judgement label (see review).
 const JUDGE_FONT := preload("res://assets/Font/Kenney Future.ttf")
 
+# Hit chime (royalty-free 400 Sounds Pack). Played on every successful circle hit
+# via a dedicated player so it never interrupts the song on $AudioStreamPlayer.
+const HIT_SFX_PATH := "res://400 Sounds Pack/Musical Effects/8_bit_chime_positive.wav"
+var _sfx: AudioStreamPlayer
+
 # --- Tunables ---
 const PREEMPT_MS: float = 1200.0      # how long a circle is visible before its beat
 const END_PAD_MS: float = 1000.0      # round budget = last note + this pad
@@ -45,6 +50,11 @@ func setup() -> void:
 	circle_scene = load("res://minigames/osu_um/Circle.tscn")
 	hit_zone = HitZone.new()
 	add_child(hit_zone)
+
+	# Dedicated SFX player so hit chimes don't interrupt the song.
+	_sfx = AudioStreamPlayer.new()
+	add_child(_sfx)
+	_sfx.stream = load(HIT_SFX_PATH)
 
 	instruction_text = "Direct the performance! The closer the ring to the circle, the more accurate your hit!"
 
@@ -196,6 +206,8 @@ func _input(event: InputEvent) -> void:
 				score_manager.register_hit(result)
 				hit_circles.append(closest_circle)
 				_pulse_stage()
+				if _sfx.stream != null:
+					_sfx.play()
 			else:
 				closest_circle.set_hit_state("missed")
 				score_manager.register_hit("miss")
