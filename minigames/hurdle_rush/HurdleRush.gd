@@ -44,8 +44,12 @@ func _process(delta: float) -> void:
 			if child.position.x < -100:
 				child.queue_free()
 				
-	# Win condition
-	if time_elapsed >= base_duration - 0.2 and not _finished:
+	# Win condition. time_elapsed accumulates delta * time_scale, so this
+	# threshold needs to scale with time_scale too in order to keep a
+	# constant ~0.3s real-time margin before the HUD's own timeout fires
+	# (otherwise that margin shrinks to near-zero in later faculties and
+	# a last-moment HUD timeout can race this and turn a win into a loss).
+	if time_elapsed >= base_duration - 0.3 * time_scale:
 		_win_game()
 
 func _on_hurdle_timer_timeout():

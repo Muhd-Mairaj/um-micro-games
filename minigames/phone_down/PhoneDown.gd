@@ -12,7 +12,7 @@
 #
 # RULES:
 #   - extends MiniGameBase  (no own Timer nodes, no change_scene, one win/lose)
-#   - setup() only; _ready() kept only for solo testing
+#   - setup() only — MiniGameBase._ready() calls it for us
 # =============================================================================
 
 extends MiniGameBase
@@ -89,12 +89,6 @@ const SFX_HIDE = preload("res://400 Sounds Pack/UI/sci_fi_confirm.wav")
 const SFX_CAUGHT = preload("res://400 Sounds Pack/Retro/lose.wav")
 
 # ---------------------------------------------------------------------------
-# SOLO TESTING — keep _ready() only for running the scene standalone
-# ---------------------------------------------------------------------------
-func _ready() -> void:
-	setup()
-
-# ---------------------------------------------------------------------------
 # MINIGAMEBASE CONTRACT
 # ---------------------------------------------------------------------------
 func setup() -> void:
@@ -116,6 +110,10 @@ func setup() -> void:
 # GAME LOOP
 # ---------------------------------------------------------------------------
 func _process(delta: float) -> void:
+	# Scale every internal clock by time_scale so this minigame's pacing
+	# shrinks along with the HUD's actual_duration() in later faculties.
+	delta *= time_scale
+
 	# ── Safe-return delay (lets phone_hidden texture show briefly) ──────────
 	if _awaiting_safe:
 		_safe_delay_timer -= delta
