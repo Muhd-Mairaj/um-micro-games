@@ -1,0 +1,41 @@
+[gd_scene format=3 uid="uid://c8rfi6xmtvmrd"]
+
+[ext_resource type="Script" uid="uid://b6sppl8w7nl1" path="res://minigames/friday_slipper_hunt/FindSlippers.gd" id="1_nvh1l"]
+[ext_resource type="Texture2D" uid="uid://bq03y6jes3hsu" path="res://minigames/friday_slipper_hunt/assets/slipper_green.png" id="2_5gr4p"]
+[ext_resource type="Texture2D" uid="uid://c0p5d3jatnh8b" path="res://minigames/friday_slipper_hunt/assets/Background.png" id="3_r03br"]
+[ext_resource type="Texture2D" uid="uid://dnpjc7qtah15h" path="res://minigames/friday_slipper_hunt/assets/slipper_blue.png" id="4_eqjt3"]
+[ext_resource type="AudioStream" uid="uid://ca186wx8jp8u4" path="res://minigames/friday_slipper_hunt/shiny_success.wav" id="5_7bxem"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_21cbn"]
+draw_center = false
+
+[node name="FindSlippers" type="Node2D" unique_id=599839739]
+script = ExtResource("1_nvh1l")
+green_slipper_image = ExtResource("2_5gr4p")
+
+[node name="Background" type="TextureRect" parent="." unique_id=2048951384]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 2.0
+offset_right = 1934.0
+offset_bottom = 1066.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("3_r03br")
+
+[node name="WrongClickBackground" type="Button" parent="." unique_id=1559337674]
+offset_right = 1906.0
+offset_bottom = 1056.0
+theme_override_styles/normal = SubResource("StyleBoxFlat_21cbn")
+
+[node name="BlueSlipper" type="TextureButton" parent="." unique_id=239002348]
+z_index = 5
+offset_left = 1420.0
+offset_top = 632.0
+offset_right = 1920.0
+offset_bottom = 1132.0
+texture_normal = ExtResource("4_eqjt3")
+
+[node name="SuccessSound" type="AudioStreamPlayer2D" parent="." unique_id=1616330484]
+stream = ExtResource("5_7bxem")

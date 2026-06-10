@@ -1,0 +1,16 @@
+[gd_scene format=3 uid="uid://csrb3xiw1xw3o"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_n8cef"]
+
+[node name="SadqaSmile" type="Node2D" unique_id=451204399]
+
+[node name="Character" type="Area2D" parent="." unique_id=2002916078]
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Character" unique_id=1339927085]
+sprite_frames = SubResource("SpriteFrames_n8cef")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Character" unique_id=1543840345]
+
+[node name="CPUParticles2D" type="CPUParticles2D" parent="Character" unique_id=2092904248]
+
+[node name="AudioStreamPlayer2D" type="AudioStreamPlayer2D" parent="Character" unique_id=1543126957]
