@@ -15,6 +15,10 @@ run/main_scene="uid://c7kn34pt570rd"
 config/features=PackedStringArray("4.6", "Forward Plus")
 config/icon="res://icon.svg"
 
+[autoload]
+
+SignalBus="*res://minigames/bas_um_model_crush/signal_bus.gd"
+
 [physics]
 
 3d/physics_engine="Jolt Physics"
