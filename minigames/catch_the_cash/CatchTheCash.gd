@@ -12,16 +12,16 @@
 #     WIN  -> balance reaches target_score              ("PROFIT!  YOU WIN")
 #     LOSE -> timer ends below target, or balance hits 0 ("BANKRUPT!")
 #
-# HOW THIS HOOKS INTO THE SHARED FRAMEWORK (identical to Game 1 / Order in the Court):
+# HOW THIS HOOKS INTO THE SHARED FRAMEWORK (see shared/MiniGameBase.gd):
 #   - extends MiniGameBase and overrides setup() (NOT _ready()).
-#   - base_duration drives the shared HUD countdown bar via actual_duration().
-#   - We report the result with win() / lose(); GameManager + HUD handle the
-#     scoring, the result flash, and the transition. We add NO timer of our own.
-#   - The HUD auto-calls lose() when its countdown hits zero. WIN here is an
-#     instant event (balance >= target), so it has no timeout race. For the
-#     "ran out of time below target" LOSE we pre-empt the HUD a hair early
-#     (actual_duration() - END_SAFETY_MARGIN) so we can show our own BANKRUPT
-#     banner; the base _finished guard then no-ops the HUD's later lose().
+#   - base_duration drives the shared HUD countdown bar via actual_duration();
+#     this game adds NO timer of its own — the shared HUD owns the countdown.
+#   - WIN is an instant event the moment balance reaches the target. The two
+#     LOSES are: balance hits 0 (instant BANKRUPT), or the shared HUD timer runs
+#     out below target — GameManager already calls lose() on that timeout and the
+#     HUD shows the result, so we do NOT re-handle "time's up" here.
+#   - Standalone (F6) reuses the SAME shared HUD (shared/HUD.tscn) for its timer
+#     bar, so there is no second timer implementation anywhere.
 #   - The Stitcher registers this path in GameManager.gd in Week 12:
 #       "res://minigames/catch_the_cash/CatchTheCash.tscn",
 #
@@ -70,9 +70,6 @@ extends MiniGameBase
 # CONSTANTS
 # ---------------------------------------------------------------------------
 
-## Pre-empt the HUD timeout by this much so we can show our own result banner.
-const END_SAFETY_MARGIN: float = 0.25
-
 ## UM palette (shared with Game 1 for a consistent look; no STYLE_GUIDE.md yet).
 const UM_NAVY:       Color = Color(0.0,   0.184, 0.424, 1.0)  # #002F6C
 const UM_NAVY_DARK:  Color = Color(0.0,   0.122, 0.282, 1.0)
@@ -96,13 +93,13 @@ const SFX_BAD_PATH:  String = "res://minigames/catch_the_cash/assets/sfx_fpp_tax
 # ---------------------------------------------------------------------------
 
 var _round_active: bool = false
-var _elapsed: float = 0.0
-var _round_len: float = 10.0
-var _end_at: float = 9.75
 var _balance: int = 20
 var _spawn_timer: float = 0.0
 var _wallet_target_x: float = 640.0
 var _standalone: bool = false
+## Standalone (F6) only: an instance of the shared HUD so solo runs use the same
+## timer bar as the hub instead of a home-grown one.
+var _solo_hud: CanvasLayer = null
 
 ## One entry per live item: { "node": Node2D, "bad": bool }.
 var _items: Array = []
@@ -132,7 +129,6 @@ var _item_layer: Node2D
 var _wallet: Node2D
 var _balance_label: Label
 var _target_label: Label
-var _countdown_label: Label
 var _title_label: Label
 var _bar_bg: ColorRect
 var _bar_fill: ColorRect
@@ -165,11 +161,7 @@ func setup() -> void:
 	target_score = starting_balance + ceili(float(target_score - starting_balance) / time_scale)
 	target_score = maxi(target_score, starting_balance + good_value)
 
-	# Round bookkeeping (actual_duration() already accounts for time_scale).
-	_round_len = maxf(actual_duration(), 1.0)
-	_end_at = maxf(_round_len - END_SAFETY_MARGIN, _round_len * 0.6)
-
-	# Standalone (F6) vs in the hub — gates the retry button.
+	# Standalone (F6) vs in the hub — gates the solo HUD + retry button.
 	_standalone = get_tree().current_scene == self
 
 	# Optional shared font (null-safe).
@@ -182,12 +174,15 @@ func setup() -> void:
 
 	# Start the round.
 	_balance = starting_balance
-	_elapsed = 0.0
 	_spawn_timer = 0.0
 	_wallet_target_x = _vp.x * 0.5
 	_round_active = true
 	_update_balance_ui()
-	_update_countdown()
+
+	# Standalone testing: reuse the real shared HUD so even F6 runs off the one
+	# timer bar; its countdown running out below target is the loss (as in the hub).
+	if _standalone:
+		_start_solo_hud()
 
 # Wallet follows the horizontal mouse / touch position (desktop + mobile).
 func _input(event: InputEvent) -> void:
@@ -201,8 +196,6 @@ func _input(event: InputEvent) -> void:
 func _process(delta: float) -> void:
 	if _finished or not _round_active:
 		return
-
-	_elapsed += delta
 
 	# Wallet tracks the pointer, clamped fully inside the screen.
 	var half: float = _wall_w * 0.5
@@ -237,18 +230,15 @@ func _process(delta: float) -> void:
 			item.queue_free()
 
 	_update_balance_ui()
-	_update_countdown()
 
-	# Outcomes.
+	# Outcomes we own: instant WIN on hitting target, instant BANKRUPT at zero.
+	# "Time's up below target" is handled by the shared HUD timer (GameManager
+	# calls lose() on timeout) — we deliberately do NOT re-implement it here.
 	if _balance >= target_score:
 		_win()
 		return
 	if _balance <= 0:
 		_lose("BANKRUPT!")
-		return
-	if _elapsed >= _end_at:
-		# Time's up below target.
-		_lose("TIME'S UP!")
 
 # ---------------------------------------------------------------------------
 # OUTCOMES
@@ -278,6 +268,33 @@ func _show_result(text: String, color: Color) -> void:
 		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	if _standalone:
 		_retry_button.visible = true
+
+# ---------------------------------------------------------------------------
+# STANDALONE SHARED-HUD HARNESS (F6 only) — reuse shared/HUD.tscn so solo runs
+# use the exact same timer bar as the hub (no second timer implementation).
+# ---------------------------------------------------------------------------
+
+func _start_solo_hud() -> void:
+	var hud_scene: PackedScene = load("res://shared/HUD.tscn")
+	if hud_scene == null:
+		return
+	_solo_hud = hud_scene.instantiate()
+	add_child(_solo_hud)
+	_solo_hud.update_lives(3)
+	_solo_hud.update_progress(0, 1)
+	_solo_hud.set_instruction(instruction_text)
+	_solo_hud.start(actual_duration())
+	# Mirror GameManager: time running out below target is the loss.
+	_solo_hud.timed_out.connect(func() -> void: lose())
+	# No GameManager in solo, so reflect our own outcome on the shared HUD + retry.
+	game_won.connect(func() -> void: _on_solo_finished(true))
+	game_lost.connect(func() -> void: _on_solo_finished(false))
+
+func _on_solo_finished(won: bool) -> void:
+	_round_active = false
+	if is_instance_valid(_solo_hud):
+		_solo_hud.show_result(won)
+	_retry_button.visible = true
 
 # ---------------------------------------------------------------------------
 # FALLING ITEMS
@@ -343,17 +360,18 @@ func _restart_round() -> void:
 	_items.clear()
 	_finished = false
 	_balance = starting_balance
-	_elapsed = 0.0
 	_spawn_timer = 0.0
 	_result_label.visible = false
 	_retry_button.visible = false
 	_apply_layout()
 	_update_balance_ui()
-	_update_countdown()
 	_round_active = true
+	# Restart the shared HUD timer for the new attempt.
+	if _solo_hud != null:
+		_solo_hud.start(actual_duration())
 
 # ---------------------------------------------------------------------------
-# HUD-ON-SCREEN: balance, target, countdown
+# HUD-ON-SCREEN: balance + target (the countdown is the shared HUD's job)
 # ---------------------------------------------------------------------------
 
 func _update_balance_ui() -> void:
@@ -363,10 +381,6 @@ func _update_balance_ui() -> void:
 	_bar_fill.size = Vector2(_bar_bg.size.x * frac, _bar_bg.size.y)
 	_bar_fill.position = _bar_bg.position
 	_bar_fill.color = RINGGIT_GREEN if _balance >= starting_balance else TAX_RED
-
-func _update_countdown() -> void:
-	var remaining: float = clampf(_round_len - _elapsed, 0.0, _round_len)
-	_countdown_label.text = "TIME:  %.1fs" % remaining
 
 # ---------------------------------------------------------------------------
 # SCENE CONSTRUCTION (all in code, laid out from the viewport size)
@@ -430,11 +444,6 @@ func _build_scene() -> void:
 	_target_label.name = "TargetLabel"
 	_style_label(_target_label, 22, UM_GOLD, HORIZONTAL_ALIGNMENT_RIGHT)
 	add_child(_target_label)
-
-	_countdown_label = Label.new()
-	_countdown_label.name = "CountdownLabel"
-	_style_label(_countdown_label, 22, WHITE, HORIZONTAL_ALIGNMENT_CENTER)
-	add_child(_countdown_label)
 
 	_result_label = Label.new()
 	_result_label.name = "ResultLabel"
@@ -517,8 +526,6 @@ func _apply_layout() -> void:
 	_balance_label.size = Vector2(_vp.x * 0.4, _vp.y * 0.05)
 	_target_label.position = Vector2(_vp.x * 0.54, top_safe + _vp.y * 0.10)
 	_target_label.size = Vector2(_vp.x * 0.4, _vp.y * 0.05)
-	_countdown_label.position = Vector2(_vp.x * 0.5 - _vp.x * 0.2, top_safe + _vp.y * 0.105)
-	_countdown_label.size = Vector2(_vp.x * 0.4, _vp.y * 0.05)
 
 	_result_label.position = Vector2(_vp.x * 0.5 - _vp.x * 0.45, _vp.y * 0.36)
 	_result_label.size = Vector2(_vp.x * 0.9, _vp.y * 0.16)
