@@ -15,18 +15,40 @@
 extends MiniGameBase
 
 # ---------------------------------------------------------------------------
-# LAYOUT (1280x720; HUD overlay owns the top strip)
+# LAYOUT — RESPONSIVE
 # ---------------------------------------------------------------------------
-const LOOP_LEFT: float   = 340.0
-const LOOP_RIGHT: float  = 940.0
-const LOOP_TOP: float    = 200.0
-const LOOP_BOTTOM: float = 410.0
-const GAP_HALF: float    = 42.0          # half-length of a missing segment
+# Reference design is 1280x720. Every layout value below is authored against
+# that reference, then scaled by the live viewport size in _layout(). At
+# exactly 1280x720 the scale factors are 1.0, so the result is pixel-identical
+# to the original hardcoded layout; on any other viewport the loop, tray, and
+# grid fill and centre correctly. The HUD overlay still owns the top strip.
+const REF_SIZE: Vector2 = Vector2(1280.0, 720.0)
 
-const TRAY_Y: float      = 512.0
-const SLOT_W: float      = 150.0
-const SLOT_H: float      = 132.0
-const SLOT_GAP: float    = 48.0
+# Reference (1280x720) layout anchors — formerly the hardcoded constants.
+const REF_LOOP_LEFT: float   = 340.0
+const REF_LOOP_RIGHT: float  = 940.0
+const REF_LOOP_TOP: float    = 200.0
+const REF_LOOP_BOTTOM: float = 410.0
+const REF_GAP_HALF: float    = 42.0      # half-length of a missing segment
+
+const REF_TRAY_Y: float      = 512.0
+const REF_SLOT_W: float      = 150.0
+const REF_SLOT_H: float      = 132.0
+const REF_SLOT_GAP: float    = 48.0
+
+# Live layout values, recomputed by _layout() from the current viewport size.
+# Initialised to the reference so any draw before the first _layout() still works.
+var VIEW: Vector2        = REF_SIZE
+var LOOP_LEFT: float     = REF_LOOP_LEFT
+var LOOP_RIGHT: float    = REF_LOOP_RIGHT
+var LOOP_TOP: float      = REF_LOOP_TOP
+var LOOP_BOTTOM: float   = REF_LOOP_BOTTOM
+var GAP_HALF: float      = REF_GAP_HALF
+
+var TRAY_Y: float        = REF_TRAY_Y
+var SLOT_W: float        = REF_SLOT_W
+var SLOT_H: float        = REF_SLOT_H
+var SLOT_GAP: float      = REF_SLOT_GAP
 
 # ---------------------------------------------------------------------------
 # COMPONENT CATALOG — only conductors complete the circuit.
@@ -82,6 +104,13 @@ var _sparks: Array = []         # each: { pos, dir, t, col, len }
 # ---------------------------------------------------------------------------
 func setup() -> void:
 	instruction_text = "Light the bulb — fix every gap to complete the circuit!"
+	# Compute the responsive layout up front so _build_round() (called below) and
+	# the first _draw() use viewport-correct positions. Reconnect to size_changed
+	# so the layout follows window resizes / different displays.
+	_layout()
+	var vp: Viewport = get_viewport()
+	if vp != null and not vp.size_changed.is_connected(_on_viewport_resized):
+		vp.size_changed.connect(_on_viewport_resized)
 	_font = load("res://assets/Font/Kenney Future.ttf")
 	# SFX sourced from the repo's royalty-free 400 Sounds Pack.
 	_audio = AudioStreamPlayer.new()
@@ -97,22 +126,81 @@ func setup() -> void:
 	base_duration = clampf(5.0 + 2.0 * _num_gaps, 8.0, 12.0)
 	queue_redraw()
 
+# Recompute every layout value from the live viewport size, scaled from the
+# 1280x720 reference. At 1280x720 the scale factors are exactly 1.0, so every
+# value equals its original constant and the layout is pixel-identical.
+func _layout() -> void:
+	var vp: Viewport = get_viewport()
+	VIEW = vp.get_visible_rect().size if vp != null else REF_SIZE
+	if VIEW.x <= 0.0 or VIEW.y <= 0.0:
+		VIEW = REF_SIZE
+	var sx: float = VIEW.x / REF_SIZE.x
+	var sy: float = VIEW.y / REF_SIZE.y
+	LOOP_LEFT   = REF_LOOP_LEFT * sx
+	LOOP_RIGHT  = REF_LOOP_RIGHT * sx
+	LOOP_TOP    = REF_LOOP_TOP * sy
+	LOOP_BOTTOM = REF_LOOP_BOTTOM * sy
+	# GAP_HALF / slot sizes scale with the smaller axis so shapes stay proportionate.
+	var s_min: float = min(sx, sy)
+	GAP_HALF = REF_GAP_HALF * s_min
+	TRAY_Y   = REF_TRAY_Y * sy
+	SLOT_W   = REF_SLOT_W * sx
+	SLOT_H   = REF_SLOT_H * sy
+	SLOT_GAP = REF_SLOT_GAP * sx
+
+# Viewport resized (window maximised / moved to another display): recompute the
+# layout, re-derive the active gaps' centres, and re-position the EXISTING tray
+# slots (without re-randomising the puzzle) so the slot hit-test rectangles stay
+# aligned with what's drawn.
+func _on_viewport_resized() -> void:
+	_layout()
+	_reposition_gaps()
+	_reposition_tray()
+	queue_redraw()
+
+# Re-lays the current tray slots at the new scale, preserving each slot's type
+# and conducts flag (so the puzzle is unchanged). Mirrors _build_tray's centring
+# math but never touches the random answer/decoy selection.
+func _reposition_tray() -> void:
+	var n: int = _slots.size()
+	if n == 0:
+		return
+	var total_w: float = n * SLOT_W + (n - 1) * SLOT_GAP
+	var start_x: float = (VIEW.x - total_w) / 2.0
+	for i in range(n):
+		_slots[i].rect = Rect2(start_x + i * (SLOT_W + SLOT_GAP), TRAY_Y, SLOT_W, SLOT_H)
+
+# Re-derives gap centres in place after a resize, preserving each gap's edge and
+# its relative position so _draw_circuit's edge-matching (is_equal_approx against
+# LOOP_*) keeps working.
+func _reposition_gaps() -> void:
+	var sx: float = VIEW.x / REF_SIZE.x
+	var sy: float = VIEW.y / REF_SIZE.y
+	for g in _gaps:
+		var ref_c: Vector2 = g.get("ref_center", g.center)
+		g.center = Vector2(ref_c.x * sx, ref_c.y * sy)
+
 func _build_round() -> void:
 	# Harder rounds get more gaps as the game speeds up.
 	_num_gaps = clampi(2 + int(floor((time_scale - 1.0) / 0.3)), 2, 4)
+	var sx: float = VIEW.x / REF_SIZE.x
+	var sy: float = VIEW.y / REF_SIZE.y
 	var mid_y: float = (LOOP_TOP + LOOP_BOTTOM) / 2.0
 	# Candidate gap spots on free segments (avoid battery on left-mid, bulb on top-mid).
+	# ref_center stores the unscaled 1280x720 anchor so a later resize can re-derive
+	# center exactly. The two interior X anchors (490, 790) scale by sx.
 	var cands: Array = [
-		{"center": Vector2(490.0, LOOP_BOTTOM), "horizontal": true},
-		{"center": Vector2(790.0, LOOP_BOTTOM), "horizontal": true},
-		{"center": Vector2(LOOP_RIGHT, mid_y), "horizontal": false},
-		{"center": Vector2(790.0, LOOP_TOP), "horizontal": true},
+		{"center": Vector2(490.0 * sx, LOOP_BOTTOM), "ref_center": Vector2(490.0, REF_LOOP_BOTTOM), "horizontal": true},
+		{"center": Vector2(790.0 * sx, LOOP_BOTTOM), "ref_center": Vector2(790.0, REF_LOOP_BOTTOM), "horizontal": true},
+		{"center": Vector2(LOOP_RIGHT, mid_y), "ref_center": Vector2(REF_LOOP_RIGHT, (REF_LOOP_TOP + REF_LOOP_BOTTOM) / 2.0), "horizontal": false},
+		{"center": Vector2(790.0 * sx, LOOP_TOP), "ref_center": Vector2(790.0, REF_LOOP_TOP), "horizontal": true},
 	]
 	cands.shuffle()
 	_gaps.clear()
 	for i in range(_num_gaps):
 		_gaps.append({
 			"center": cands[i].center,
+			"ref_center": cands[i].ref_center,
 			"horizontal": cands[i].horizontal,
 			"filled": false,
 		})
@@ -134,7 +222,7 @@ func _build_tray() -> void:
 	types.shuffle()
 
 	var total_w: float = n * SLOT_W + (n - 1) * SLOT_GAP
-	var start_x: float = (1280.0 - total_w) / 2.0
+	var start_x: float = (VIEW.x - total_w) / 2.0
 	_slots.clear()
 	for i in range(n):
 		var t: String = types[i]
@@ -293,24 +381,40 @@ func _draw() -> void:
 	_draw_feedback()
 
 func _draw_background() -> void:
-	draw_rect(Rect2(0, 0, 1280, 720), BG, true)
-	for x in range(0, 1280, 40):
-		draw_line(Vector2(x, 0), Vector2(x, 720), GRID, 1.0)
-	for y in range(0, 720, 40):
-		draw_line(Vector2(0, y), Vector2(1280, y), GRID, 1.0)
+	draw_rect(Rect2(0, 0, VIEW.x, VIEW.y), BG, true)
+	# Grid spacing scales with the viewport so the cell count stays the same as at
+	# 1280x720 (1280/40 = 32 columns, 720/40 = 18 rows), keeping the look identical.
+	# Half-open (< not <=) so the line set matches the original range(0, 1280, 40).
+	var step_x: float = 40.0 * (VIEW.x / REF_SIZE.x)
+	var step_y: float = 40.0 * (VIEW.y / REF_SIZE.y)
+	if step_x <= 0.0:
+		step_x = 40.0
+	if step_y <= 0.0:
+		step_y = 40.0
+	var gx: float = 0.0
+	while gx < VIEW.x:
+		draw_line(Vector2(gx, 0), Vector2(gx, VIEW.y), GRID, 1.0)
+		gx += step_x
+	var gy: float = 0.0
+	while gy < VIEW.y:
+		draw_line(Vector2(0, gy), Vector2(VIEW.x, gy), GRID, 1.0)
+		gy += step_y
 
 func _draw_instructions() -> void:
 	if not _font:
 		return
-	draw_string(_font, Vector2(0, 112), "LIGHT THE BULB!",
-		HORIZONTAL_ALIGNMENT_CENTER, 1280, 40, BULB_ON)
-	draw_string(_font, Vector2(0, 150), "Tap the piece that lets current through — fix every gap",
-		HORIZONTAL_ALIGNMENT_CENTER, 1280, 20, TEXT)
+	var sy: float = VIEW.y / REF_SIZE.y
+	var fs: float = min(VIEW.x / REF_SIZE.x, sy)   # font scale (smaller axis)
+	# Centring width is the full viewport so text stays centred at any size.
+	draw_string(_font, Vector2(0, 112.0 * sy), "LIGHT THE BULB!",
+		HORIZONTAL_ALIGNMENT_CENTER, VIEW.x, int(40 * fs), BULB_ON)
+	draw_string(_font, Vector2(0, 150.0 * sy), "Tap the piece that lets current through — fix every gap",
+		HORIZONTAL_ALIGNMENT_CENTER, VIEW.x, int(20 * fs), TEXT)
 	# Progress counter sits in the empty centre of the loop so the bulb (top-centre)
 	# never overlaps it.
-	draw_string(_font, Vector2(0, (LOOP_TOP + LOOP_BOTTOM) / 2.0 + 8.0),
+	draw_string(_font, Vector2(0, (LOOP_TOP + LOOP_BOTTOM) / 2.0 + 8.0 * sy),
 		"%d / %d FIXED" % [_filled_count(), _num_gaps],
-		HORIZONTAL_ALIGNMENT_CENTER, 1280, 22, GOOD if _lit else TEXT)
+		HORIZONTAL_ALIGNMENT_CENTER, VIEW.x, int(22 * fs), GOOD if _lit else TEXT)
 
 func _draw_circuit() -> void:
 	var col: Color = _wire_color()
@@ -540,11 +644,13 @@ func _draw_sparks() -> void:
 func _draw_feedback() -> void:
 	if not _font:
 		return
+	var sy: float = VIEW.y / REF_SIZE.y
+	var fs: int = int(28 * min(VIEW.x / REF_SIZE.x, sy))
 	if _lit:
-		draw_string(_font, Vector2(0, 690), "CIRCUIT COMPLETE!",
-			HORIZONTAL_ALIGNMENT_CENTER, 1280, 28, GOOD)
+		draw_string(_font, Vector2(0, 690.0 * sy), "CIRCUIT COMPLETE!",
+			HORIZONTAL_ALIGNMENT_CENTER, VIEW.x, fs, GOOD)
 	elif _wrong_slot >= 0:
 		var msg: String = "STILL BROKEN — current can't pass!"
 		if _slots[_wrong_slot].type == "short":
 			msg = "SHORT CIRCUIT — ZAP!"
-		draw_string(_font, Vector2(0, 690), msg, HORIZONTAL_ALIGNMENT_CENTER, 1280, 28, BAD)
+		draw_string(_font, Vector2(0, 690.0 * sy), msg, HORIZONTAL_ALIGNMENT_CENTER, VIEW.x, fs, BAD)

@@ -25,6 +25,12 @@ const END_PAD_MS: float = 1000.0      # round budget = last note + this pad
 const MISS_GRACE_MS: float = 150.0     # extra ms past the OK window before auto-miss
 const PASS_ACCURACY_PCT: float = 40.0  # accuracy must exceed this to win (<=40 loses)
 
+# Layout reference resolution. The chart's (x,y) coordinates and the HUD label
+# offsets were all authored against this size. Every position is derived as a
+# proportion of this reference, so at exactly 1280x720 the scale is (1,1) and
+# the layout is pixel-identical to the original hand-tuned design.
+const REFERENCE_SIZE := Vector2(1280.0, 720.0)
+
 var chart_manager: ChartManager
 var score_manager: ScoreManager
 var circles_data: Array = []
@@ -90,6 +96,12 @@ func setup() -> void:
 	audio_player.pitch_scale = max(time_scale, 0.01)
 
 	_spawn_circles()
+
+	# Position circles + HUD labels for the current viewport, then keep them in
+	# sync if the window is resized/maximised mid-round. At 1280x720 this is a
+	# no-op (scale = 1,1), so the original hand-tuned layout is preserved exactly.
+	_layout_pass()
+	get_viewport().size_changed.connect(_layout_pass)
 
 	# NOTE: audio + timing intentionally start on the first _process frame
 	# (see _start_round), NOT here. GameManager disables _process during its
@@ -261,8 +273,72 @@ func _spawn_circles() -> void:
 		var circle: Circle = circle_scene.instantiate()
 		circle.set_spawn_time(circle_data.time_ms)
 		circles_container.add_child(circle)
-		# Control nodes anchor at top-left, so offset by radius to centre on (x,y).
-		circle.global_position = Vector2(circle_data.x - 40.0, circle_data.y - 40.0)
+		# Remember the chart-space centre so the layout pass can re-derive the
+		# on-screen position whenever the viewport size changes.
+		circle.set_meta("chart_pos", Vector2(float(circle_data.x), float(circle_data.y)))
+		circle.global_position = _circle_position_for(circle)
 		circle.set_combo_number(combo_number)
 		active_circles.append(circle)
 		combo_number += 1
+
+# ---------------------------------------------------------------------------
+# RESPONSIVE LAYOUT
+# The hub runs with stretch mode "disabled", so get_viewport_rect().size grows
+# to the real window size when maximised / on other displays. World-space
+# circles (Node2D children) and the CanvasLayer HUD labels both use absolute
+# pixels, so without this pass they'd cluster in the top-left of a larger view.
+# Everything below derives from REFERENCE_SIZE, making 1280x720 an exact no-op.
+# ---------------------------------------------------------------------------
+
+func _viewport_scale() -> Vector2:
+	# Ratio of the live viewport to the 1280x720 reference. (1,1) at default size.
+	var vp := get_viewport_rect().size
+	if vp.x <= 0.0 or vp.y <= 0.0:
+		return Vector2.ONE
+	return vp / REFERENCE_SIZE
+
+func _circle_position_for(circle: Circle) -> Vector2:
+	# Chart centre scaled into the live viewport, then offset by the (unscaled)
+	# radius so the Control's top-left lands such that its centre sits on target.
+	# Circle visual size is intentionally NOT scaled — only positions move, so
+	# hit windows / clickable radius / difficulty are unchanged.
+	var chart_pos: Vector2 = circle.get_meta("chart_pos", Vector2.ZERO)
+	return chart_pos * _viewport_scale() - Vector2(circle.circle_radius, circle.circle_radius)
+
+func _layout_pass() -> void:
+	# Reposition every spawned circle for the current viewport size.
+	for circle in active_circles:
+		if is_instance_valid(circle):
+			circle.global_position = _circle_position_for(circle)
+	_layout_labels()
+
+func _layout_labels() -> void:
+	# Re-anchor the three HUD labels so they hug the bottom corners and scale
+	# proportionally, instead of clipping/overlapping on narrow viewports.
+	# Offsets are expressed as fractions of REFERENCE_SIZE, so the resolved
+	# pixel offsets are identical to the original .tscn values at 1280x720.
+	var s := _viewport_scale()
+
+	# ComboLabel: bottom-left. Original tscn: left=24, right=420, top=-104,
+	# bottom=-40 (anchors left=0, top=bottom=1).
+	if combo_label != null:
+		combo_label.offset_left = 24.0 * s.x
+		combo_label.offset_right = 420.0 * s.x
+		combo_label.offset_top = -104.0 * s.y
+		combo_label.offset_bottom = -40.0 * s.y
+
+	# ScoreLabel: bottom-right. Original tscn: left=-360, right=-24, top=-58,
+	# bottom=-26 (all anchors = 1).
+	if score_label != null:
+		score_label.offset_left = -360.0 * s.x
+		score_label.offset_right = -24.0 * s.x
+		score_label.offset_top = -58.0 * s.y
+		score_label.offset_bottom = -26.0 * s.y
+
+	# AccuracyLabel: bottom-right, sits just above ScoreLabel. Original tscn:
+	# left=-360, right=-24, top=-92, bottom=-62 (all anchors = 1).
+	if accuracy_label != null:
+		accuracy_label.offset_left = -360.0 * s.x
+		accuracy_label.offset_right = -24.0 * s.x
+		accuracy_label.offset_top = -92.0 * s.y
+		accuracy_label.offset_bottom = -62.0 * s.y

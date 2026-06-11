@@ -76,8 +76,10 @@ var virus_found := false
 
 # =============================================================================
 func setup() -> void:
-	base_duration = 25.0
-	instruction_text = ""
+	# Brought into the hub's 5-15s range (was 25s, which made this one game run
+	# ~2.5x longer than the rest). Systems Balancer can fine-tune.
+	base_duration = 12.0
+	instruction_text = "Scan for the virus!"
 
 	var screen_size = get_viewport_rect().size
 

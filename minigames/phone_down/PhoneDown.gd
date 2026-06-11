@@ -116,20 +116,18 @@ func _process(delta: float) -> void:
 	# shrinks along with the HUD's actual_duration() in later faculties.
 	delta *= time_scale
 
-	# Check for natural survival win (10 seconds)
-	# The GameManager will call lose() if time runs out, but we want time out to mean WIN here.
-	# We will handle the win condition by checking the time elapsed if needed, or by overriding behavior.
-	# Actually, GameManager handles timeout. By default, GameManager calls lose() on timeout.
-	# To make it a survival game, we must manually trigger win() just before GameManager triggers timeout.
-	
+	# Survival win is handled by the lose() override below: when the shared HUD
+	# timer runs out, GameManager calls lose(), which we convert to win() while
+	# game_active is still true (no mistake made). delta is already time_scaled
+	# above, so the timers below must NOT multiply by time_scale again.
 	if _awaiting_safe:
-		_safe_delay_timer -= delta * time_scale
+		_safe_delay_timer -= delta
 		if _safe_delay_timer <= 0.0:
 			_awaiting_safe = false
 			_set_state("SAFE")
 
 	if game_active:
-		state_timer += delta * time_scale
+		state_timer += delta
 		match state:
 			"SAFE":
 				if state_timer >= next_glance_time:
@@ -148,7 +146,7 @@ func _process(delta: float) -> void:
 
 	# Effects...
 	if _is_shaking:
-		_shake_time += delta * time_scale
+		_shake_time += delta
 		if _shake_time < 0.5:
 			var offset := Vector2(sin(_shake_time * 60.0) * 6.0, cos(_shake_time * 55.0) * 3.0)
 			lecturer.position = _lecturer_origin + offset
@@ -158,14 +156,14 @@ func _process(delta: float) -> void:
 			_shake_time = 0.0
 
 	if _flash_active:
-		_flash_alpha = max(0.0, _flash_alpha - delta * 3.0 * time_scale)
+		_flash_alpha = max(0.0, _flash_alpha - delta * 3.0)
 		flash_overlay.color = Color(1.0, 0.0, 0.0, _flash_alpha)
 		if _flash_alpha <= 0.0:
 			_flash_active = false
 			flash_overlay.visible = false
 
 	if _feedback_active:
-		_feedback_timer -= delta * time_scale
+		_feedback_timer -= delta
 		var alpha := clampf(_feedback_timer / 0.3, 0.0, 1.0)
 		feedback_label.modulate.a = alpha
 		if _feedback_timer <= 0.0:
