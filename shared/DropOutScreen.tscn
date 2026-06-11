@@ -1,42 +1,97 @@
-[gd_scene format=3 uid="uid://d232nydqpv0pq"]
+[gd_scene load_steps=6 format=3 uid="uid://d232nydqpv0pq"]
 
 [ext_resource type="Script" uid="uid://c73y8gj8x472f" path="res://shared/DropOutScreen.gd" id="1_acymq"]
+[ext_resource type="Texture2D" path="res://assets/PNG/Red/Default/button_rectangle_depth_gradient.png" id="2_btn"]
+[ext_resource type="FontFile" uid="uid://c6hhsjjvmw2l5" path="res://assets/Font/Kenney Future.ttf" id="3_font"]
+
+[sub_resource type="Gradient" id="Gradient_drop"]
+offsets = PackedFloat32Array(0, 1)
+colors = PackedColorArray(0.22, 0.03, 0.03, 1, 0.04, 0, 0, 1)
+
+[sub_resource type="GradientTexture2D" id="GradTex_drop"]
+gradient = SubResource("Gradient_drop")
+fill_from = Vector2(0, 0)
+fill_to = Vector2(0, 1)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_btn"]
+texture = ExtResource("2_btn")
+texture_margin_left = 24.0
+texture_margin_top = 20.0
+texture_margin_right = 24.0
+texture_margin_bottom = 24.0
 
 [node name="DropOutScreen" type="CanvasLayer" unique_id=1537057583]
 layer = 20
 script = ExtResource("1_acymq")
 
+[node name="Backdrop" type="TextureRect" parent="." unique_id=1733138595]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = SubResource("GradTex_drop")
+expand_mode = 1
+stretch_mode = 6
+
 [node name="ColorRect" type="ColorRect" parent="." unique_id=1638565542]
-offset_right = 40.0
-offset_bottom = 40.0
-color = Color(0.14901961, 0.019607844, 0.019607844, 1)
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.35)
 
 [node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=1684910840]
-custom_minimum_size = Vector2(640, 340)
+custom_minimum_size = Vector2(700, 440)
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
+offset_left = -350.0
+offset_top = -220.0
+offset_right = 350.0
+offset_bottom = 220.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 28
+theme_override_constants/separation = 24
 
 [node name="HeadlineLabel" type="Label" parent="VBoxContainer" unique_id=2146373189]
 modulate = Color(1, 0.3019608, 0.3019608, 1)
 layout_mode = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 6
+theme_override_fonts/font = ExtResource("3_font")
 theme_override_font_sizes/font_size = 64
 text = "DROPPED OUT"
 horizontal_alignment = 1
 
 [node name="SubLabel" type="Label" parent="VBoxContainer" unique_id=1150852575]
 layout_mode = 2
-theme_override_font_sizes/font_size = 24
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 6
+theme_override_fonts/font = ExtResource("3_font")
+theme_override_font_sizes/font_size = 26
 text = "You ran out of lives.
 Better luck next semester."
+horizontal_alignment = 1
+
+[node name="PlayAgainLabel" type="Label" parent="VBoxContainer" unique_id=2054229396]
+modulate = Color(1, 1, 1, 0.6)
+layout_mode = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_fonts/font = ExtResource("3_font")
+theme_override_font_sizes/font_size = 20
+text = "Every dropout's a comeback story — try again?"
 horizontal_alignment = 1
 
 [node name="TryAgainButton" type="Button" parent="VBoxContainer" unique_id=309428265]
 custom_minimum_size = Vector2(280, 70)
 layout_mode = 2
+theme_override_fonts/font = ExtResource("3_font")
+theme_override_styles/normal = SubResource("StyleBoxTexture_btn")
+theme_override_styles/hover = SubResource("StyleBoxTexture_btn")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_btn")
 text = "Try Again"

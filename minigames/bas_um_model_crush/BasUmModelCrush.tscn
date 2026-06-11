@@ -1,0 +1,265 @@
+[gd_scene format=3 uid="uid://smvemr8i5lls"]
+
+[ext_resource type="Script" uid="uid://dmnfyfdv48lfx" path="res://minigames/bas_um_model_crush/BasUmModelCrush.gd" id="1_04oa7"]
+[ext_resource type="Texture2D" uid="uid://blpmmgdvrf8nx" path="res://minigames/bas_um_model_crush/assets/Background.png" id="2_dnwrr"]
+[ext_resource type="Texture2D" uid="uid://cg248i8n4ltiq" path="res://minigames/bas_um_model_crush/assets/player3.png" id="5_hr2im"]
+[ext_resource type="Texture2D" uid="uid://siqpqvno0xiv" path="res://minigames/bas_um_model_crush/assets/player_Walk1.png" id="5_hysix"]
+[ext_resource type="Texture2D" uid="uid://7lxikgd02vus" path="res://minigames/bas_um_model_crush/assets/student1.png" id="6_amus0"]
+[ext_resource type="Script" uid="uid://caubiynn5mfjf" path="res://minigames/bas_um_model_crush/student.gd" id="6_prr51"]
+[ext_resource type="Script" uid="uid://vd0den56i58v" path="res://minigames/bas_um_model_crush/damageable.gd" id="7_1h2ci"]
+[ext_resource type="AudioStream" uid="uid://b8h4qti6n0cpn" path="res://shared/lose v1.0.wav" id="7_dnwrr"]
+[ext_resource type="Script" uid="uid://durnwymnm7r5r" path="res://minigames/bas_um_model_crush/state_machine.gd" id="8_a84im"]
+[ext_resource type="Texture2D" uid="uid://diepjfk0mtyy0" path="res://minigames/bas_um_model_crush/assets/Bus.png" id="9_1h2ci"]
+[ext_resource type="Script" uid="uid://3ipw3tiotnr7" path="res://minigames/bas_um_model_crush/walk_state.gd" id="9_prr51"]
+[ext_resource type="Script" uid="uid://bguxfamyfsd67" path="res://minigames/bas_um_model_crush/hit_state.gd" id="10_t558y"]
+[ext_resource type="Script" uid="uid://bqodrhrfud6d6" path="res://minigames/bas_um_model_crush/dead_state.gd" id="11_5j3ta"]
+[ext_resource type="AudioStream" uid="uid://3lfk0k3bjy8j" path="res://minigames/bas_um_model_crush/assets/swipe.wav" id="14_t558y"]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_amus0"]
+radius = 0.6925049
+height = 5.8605957
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_dnwrr"]
+atlas = ExtResource("5_hysix")
+region = Rect2(531, 0, 177, 351)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_1h2ci"]
+atlas = ExtResource("5_hysix")
+region = Rect2(354, 0, 177, 351)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_hjg0c"]
+atlas = ExtResource("5_hysix")
+region = Rect2(177, 0, 177, 351)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ijr6y"]
+atlas = ExtResource("5_hysix")
+region = Rect2(0, 0, 177, 351)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_hysix"]
+atlas = ExtResource("5_hr2im")
+region = Rect2(528, 0, 176, 354)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_amus0"]
+atlas = ExtResource("5_hr2im")
+region = Rect2(352, 0, 176, 354)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_a84im"]
+atlas = ExtResource("5_hr2im")
+region = Rect2(176, 0, 176, 354)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_a84im"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_dnwrr")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_1h2ci")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_hjg0c")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ijr6y")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_hysix")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_amus0")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_a84im")
+}],
+"loop": true,
+"name": &"walk",
+"speed": 5.0
+}]
+
+[sub_resource type="Animation" id="Animation_amus0"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Student1/Sprite2D:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [2]
+}
+
+[sub_resource type="Animation" id="Animation_dnwrr"]
+resource_name = "dead"
+step = 0.5
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Student1/Sprite2D:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [0]
+}
+
+[sub_resource type="Animation" id="Animation_1h2ci"]
+resource_name = "walk"
+loop_mode = 1
+step = 0.5
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Student1/Sprite2D:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0.1, 0.2, 0.3),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 1,
+"values": [1, 2, 3]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_hjg0c"]
+_data = {
+&"RESET": SubResource("Animation_amus0"),
+&"dead": SubResource("Animation_dnwrr"),
+&"walk": SubResource("Animation_1h2ci")
+}
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_hb6fa"]
+radius = 113.0
+height = 340.0
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_1kurv"]
+animation = &"dead"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_hb6fa"]
+animation = &"walk"
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_yohae"]
+switch_mode = 2
+advance_mode = 2
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_tur8b"]
+advance_mode = 2
+
+[sub_resource type="AnimationNodeStateMachine" id="AnimationNodeStateMachine_difpb"]
+states/Start/position = Vector2(153, 99.875)
+states/dead/node = SubResource("AnimationNodeAnimation_1kurv")
+states/dead/position = Vector2(572, 99.5)
+states/walk/node = SubResource("AnimationNodeAnimation_hb6fa")
+states/walk/position = Vector2(357, 99.75)
+transitions = ["walk", "dead", SubResource("AnimationNodeStateMachineTransition_yohae"), "Start", "walk", SubResource("AnimationNodeStateMachineTransition_tur8b")]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_prr51"]
+size = Vector2(268.5, 363)
+
+[sub_resource type="WorldBoundaryShape2D" id="WorldBoundaryShape2D_t558y"]
+distance = 1276.0
+
+[node name="BasUmModelCrush" type="Node2D" unique_id=1862083059]
+position = Vector2(-9, -5)
+script = ExtResource("1_04oa7")
+
+[node name="Background" type="TextureRect" parent="." unique_id=1199806471]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 7.0
+offset_top = 18.0
+offset_right = 1927.0
+offset_bottom = 1098.0
+grow_horizontal = 2
+grow_vertical = 2
+rotation = -0.005339976
+texture = ExtResource("2_dnwrr")
+expand_mode = 1
+
+[node name="Bus" type="TextureRect" parent="." unique_id=1859784530]
+offset_left = -36.0
+offset_top = 279.0
+offset_right = 562.0
+offset_bottom = 1323.0
+texture = ExtResource("9_1h2ci")
+
+[node name="Player" type="CharacterBody2D" parent="." unique_id=1149855050]
+position = Vector2(1832, 973)
+scale = Vector2(0.4, 0.4)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Player" unique_id=904553296]
+position = Vector2(2656.0132, 1729.0381)
+rotation = -2.1369581
+shape = SubResource("CapsuleShape2D_amus0")
+
+[node name="AnimatedS" type="AnimatedSprite2D" parent="Player" unique_id=1003778400]
+position = Vector2(-122.500114, -302.55234)
+scale = Vector2(4.0112987, 3.2333207)
+sprite_frames = SubResource("SpriteFrames_a84im")
+animation = &"walk"
+frame_progress = 0.5461275
+
+[node name="Student1" type="CharacterBody2D" parent="." unique_id=2078312606]
+position = Vector2(655, 896)
+collision_layer = 4
+script = ExtResource("6_prr51")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="Student1" unique_id=544079660]
+root_node = NodePath("../..")
+libraries/ = SubResource("AnimationLibrary_hjg0c")
+
+[node name="Sprite2D" type="Sprite2D" parent="Student1" unique_id=308537804]
+position = Vector2(31, -42.99991)
+scale = Vector2(0.34374994, 0.37988284)
+texture = ExtResource("6_amus0")
+hframes = 4
+frame = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Student1" unique_id=1981518145]
+visibility_layer = 4
+position = Vector2(10, -22)
+shape = SubResource("CapsuleShape2D_hb6fa")
+
+[node name="Damageable" type="Node" parent="Student1" unique_id=15826170]
+script = ExtResource("7_1h2ci")
+
+[node name="AnimationTree" type="AnimationTree" parent="Student1" unique_id=11984551]
+root_node = NodePath("../..")
+tree_root = SubResource("AnimationNodeStateMachine_difpb")
+anim_player = NodePath("../AnimationPlayer")
+
+[node name="StateMachine" type="Node" parent="Student1" unique_id=1254760928]
+script = ExtResource("8_a84im")
+
+[node name="WalkState" type="Node" parent="Student1/StateMachine" unique_id=1976728203]
+script = ExtResource("9_prr51")
+
+[node name="HitState" type="Node" parent="Student1/StateMachine" unique_id=1351514059]
+script = ExtResource("10_t558y")
+
+[node name="DeadState" type="Node" parent="Student1/StateMachine" unique_id=91742653]
+script = ExtResource("11_5j3ta")
+
+[node name="ClickArea" type="Area2D" parent="Student1" unique_id=582708094]
+position = Vector2(48, -403)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Student1/ClickArea" unique_id=1466987009]
+position = Vector2(-13, 375)
+scale = Vector2(0.4, 0.4)
+shape = SubResource("RectangleShape2D_prr51")
+
+[node name="LoseSound" type="AudioStreamPlayer2D" parent="." unique_id=539129528]
+stream = ExtResource("7_dnwrr")
+
+[node name="Ground" type="StaticBody2D" parent="." unique_id=2131864319]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Ground" unique_id=1257135455]
+shape = SubResource("WorldBoundaryShape2D_t558y")
+
+[node name="TapSound" type="AudioStreamPlayer2D" parent="." unique_id=412770904]
+stream = ExtResource("14_t558y")
+volume_db = 24.0
