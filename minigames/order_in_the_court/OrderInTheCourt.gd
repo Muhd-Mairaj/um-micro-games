@@ -100,6 +100,12 @@ const FONT_PATH: String = "res://assets/Font/Kenney Future.ttf"
 ## still needed from the Audio Lead. Loaded null-safely so the game never breaks.
 ## Filename is snake_case per the repo asset convention (CLAUDE.md / README).
 const SFX_BANG_PATH: String = "res://minigames/order_in_the_court/assets/sfx_fuu_gavel_bang.wav"
+## Lawyer "objection" pop, plus the shared win/lose stings at the repo root.
+const SFX_OBJECTION_PATH: String = "res://minigames/order_in_the_court/assets/sfx_fuu_objection.wav"
+const SFX_WIN_PATH:  String = "res://win v1.0.wav"
+const SFX_LOSE_PATH: String = "res://lose v1.0.wav"
+## This game's own looping background music (like the other games have).
+const BG_MUSIC_PATH: String = "res://minigames/order_in_the_court/assets/bg_fuu_music.wav"
 
 # ---------------------------------------------------------------------------
 # RUNTIME STATE
@@ -140,6 +146,10 @@ var _slot_hidden_y: float = 0.0
 
 var _font: Font = null
 var _sfx: AudioStreamPlayer = null
+var _sfx_objection: AudioStreamPlayer = null
+var _sfx_win: AudioStreamPlayer = null
+var _sfx_lose: AudioStreamPlayer = null
+var _bg_music: AudioStreamPlayer = null
 var _bg: ColorRect
 var _wall: ColorRect
 var _judge: Node2D
@@ -187,6 +197,10 @@ func setup() -> void:
 
 	# Reflow if the window is resized while playing.
 	get_viewport().size_changed.connect(_apply_layout)
+
+	# Play a win/lose sting on every outcome (hub and solo alike).
+	game_won.connect(func() -> void: _play_sfx(_sfx_win))
+	game_lost.connect(func() -> void: _play_sfx(_sfx_lose))
 
 	# Kick the round off. The first lawyer arrives after a short beat.
 	_chaos = 0.0
@@ -342,6 +356,9 @@ func _spawn_lawyer() -> void:
 	var tw := create_tween()
 	tw.tween_property(area, "position:y", _slot_up_y, POP_UP_TIME) \
 		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+
+	# "OBJECTION!" pop as the lawyer rises.
+	_play_sfx(_sfx_objection)
 
 func _build_lawyer_visual(area: Area2D) -> void:
 	# All shapes are drawn relative to the bench line (y = 0 at the bench top),
@@ -619,6 +636,7 @@ func _build_scene() -> void:
 	_title_label.name = "TitleLabel"
 	_title_label.text = "ORDER IN THE COURT  -  Faculty of Law"
 	_style_label(_title_label, 24, UM_GOLD, HORIZONTAL_ALIGNMENT_CENTER)
+	_title_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	add_child(_title_label)
 
 	# Verdict banner (hidden until the round ends).
@@ -636,11 +654,32 @@ func _build_scene() -> void:
 	_retry_button.pressed.connect(_restart_round)
 	add_child(_retry_button)
 
-	# Optional gavel-bang SFX (null-safe; file not delivered yet).
+	# Optional SFX (null-safe): gavel bang, lawyer objection pop, win/lose stings.
 	if ResourceLoader.exists(SFX_BANG_PATH):
 		_sfx = AudioStreamPlayer.new()
 		_sfx.stream = load(SFX_BANG_PATH) as AudioStream
 		add_child(_sfx)
+	if ResourceLoader.exists(SFX_OBJECTION_PATH):
+		_sfx_objection = AudioStreamPlayer.new()
+		_sfx_objection.stream = load(SFX_OBJECTION_PATH) as AudioStream
+		_sfx_objection.volume_db = -6.0
+		add_child(_sfx_objection)
+	if ResourceLoader.exists(SFX_WIN_PATH):
+		_sfx_win = AudioStreamPlayer.new()
+		_sfx_win.stream = load(SFX_WIN_PATH) as AudioStream
+		add_child(_sfx_win)
+	if ResourceLoader.exists(SFX_LOSE_PATH):
+		_sfx_lose = AudioStreamPlayer.new()
+		_sfx_lose.stream = load(SFX_LOSE_PATH) as AudioStream
+		add_child(_sfx_lose)
+	# Looping background music (kept low so the gavel / objections cut through).
+	if ResourceLoader.exists(BG_MUSIC_PATH):
+		_bg_music = AudioStreamPlayer.new()
+		_bg_music.stream = load(BG_MUSIC_PATH) as AudioStream
+		_bg_music.volume_db = -14.0
+		_bg_music.finished.connect(func() -> void: _bg_music.play())
+		add_child(_bg_music)
+		_bg_music.play()
 
 func _build_judge_visual() -> void:
 	# Simple seated-judge placeholder: robe + head + a tiny gavel in hand.
@@ -762,6 +801,10 @@ func _style_label(label: Label, size: int, color: Color, align: int) -> void:
 func _play_bang() -> void:
 	if _sfx != null:
 		_sfx.play()
+
+func _play_sfx(player: AudioStreamPlayer) -> void:
+	if player != null:
+		player.play()
 
 func _circle_points(centre: Vector2, radius: float, segments: int) -> PackedVector2Array:
 	var pts := PackedVector2Array()
