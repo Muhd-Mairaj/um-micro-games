@@ -43,7 +43,7 @@ enum Phase { PRE_GROW, GROW, WAIT, FADE, INSTRUCT, ACTIVE, WIN, DEAD }
 var phase: Phase = Phase.PRE_GROW
 
 # PRE_GROW
-var pre_grow_time := 1.0
+var pre_grow_time := 0.5
 var pre_grow_elapsed := 0.0
 
 # GROW
@@ -62,7 +62,7 @@ var fade_time := 1.2
 var fade_elapsed := 0.0
 
 # INSTRUCT
-var instruct_time := 3.0
+var instruct_time := 2.0
 var instruct_elapsed := 0.0
 
 # SCANNER
@@ -76,9 +76,10 @@ var virus_found := false
 
 # =============================================================================
 func setup() -> void:
-	# Brought into the hub's 5-15s range (was 25s, which made this one game run
-	# ~2.5x longer than the rest). Systems Balancer can fine-tune.
-	base_duration = 12.0
+	# ~5.5s of intro animation plays before scanning starts, so the round needs
+	# enough total time to actually find the virus. 16s leaves ~10s of scan time.
+	# (Was 25s originally, then 12s which left only ~5s to scan — far too fast.)
+	base_duration = 16.0
 	instruction_text = "Scan for the virus!"
 
 	var screen_size = get_viewport_rect().size
@@ -247,7 +248,9 @@ func _do_win() -> void:
 	timer_label.text = "VIRUS FOUND !!!"
 	audio_win.play()
 
-	await get_tree().create_timer(audio_win.stream.get_length()).timeout
+	# Win IMMEDIATELY so a tight HUD timer can never beat the find. Previously this
+	# awaited the full win-sound length, so finding the virus near the end let the
+	# HUD timeout fire lose() first ("found it but marked lost").
 	win()
 
 

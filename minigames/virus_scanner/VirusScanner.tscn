@@ -18,8 +18,8 @@
 script = ExtResource("1_glv2v")
 
 [node name="Background" type="Sprite2D" parent="." unique_id=1241406094]
-position = Vector2(588.6, 326.50003)
-scale = Vector2(0.916279, 0.8372396)
+position = Vector2(640, 360)
+scale = Vector2(0.9375, 0.9375)
 texture = ExtResource("2_fos0i")
 
 [node name="Blackbox" type="Sprite2D" parent="." unique_id=1122209852]

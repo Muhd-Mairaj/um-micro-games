@@ -31,8 +31,8 @@ border_color = Color(0.8784314, 0.69411767, 0.50980395, 1)
 script = ExtResource("1_glv2v")
 
 [node name="Background" type="Sprite2D" parent="." unique_id=1241406094]
-position = Vector2(577.5, 328)
-scale = Vector2(0.60260415, 0.60555565)
+position = Vector2(640, 360)
+scale = Vector2(0.6666667, 0.6666667)
 texture = ExtResource("2_20pc6")
 
 [node name="Explosion" type="Sprite2D" parent="." unique_id=1208753197]

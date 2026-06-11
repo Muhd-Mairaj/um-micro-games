@@ -37,7 +37,20 @@ const INTRO_DURATION: float = 5.0
 var _emitted: bool = false
 
 func _ready() -> void:
+	_fit_background()
 	get_tree().create_timer(INTRO_DURATION).timeout.connect(_emit_done)
+
+## Scale the Sprite2D background to fully cover the viewport (authored at a fixed
+## scale for the old default resolution, which left padding at 1280x720).
+func _fit_background() -> void:
+	var bg := get_node_or_null("Background") as Sprite2D
+	if bg == null or bg.texture == null:
+		return
+	var vp: Vector2 = get_viewport().get_visible_rect().size
+	var tex: Vector2 = bg.texture.get_size()
+	bg.position = vp / 2.0
+	var s: float = maxf(vp.x / tex.x, vp.y / tex.y)
+	bg.scale = Vector2(s, s)
 
 func _input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.pressed:

@@ -163,22 +163,16 @@ size = Vector2(268.5, 363)
 distance = 1276.0
 
 [node name="BasUmModelCrush" type="Node2D" unique_id=1862083059]
-position = Vector2(-9, -5)
+scale = Vector2(0.6666667, 0.6666667)
 script = ExtResource("1_04oa7")
 
 [node name="Background" type="TextureRect" parent="." unique_id=1199806471]
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 7.0
-offset_top = 18.0
-offset_right = 1927.0
-offset_bottom = 1098.0
-grow_horizontal = 2
-grow_vertical = 2
-rotation = -0.005339976
+custom_minimum_size = Vector2(1920, 1080)
+offset_right = 1920.0
+offset_bottom = 1080.0
 texture = ExtResource("2_dnwrr")
 expand_mode = 1
+stretch_mode = 6
 
 [node name="Bus" type="TextureRect" parent="." unique_id=1859784530]
 offset_left = -36.0

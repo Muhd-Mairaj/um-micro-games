@@ -91,14 +91,17 @@ func start(duration: float) -> void:
 	_timed_out = false
 	timer_bar.value           = 1.0
 	result_label.visible      = false
-	instruction_label.visible = true
+	# The GET READY flash already shows the instruction then hides it; keep this
+	# in-play line hidden so it doesn't persist and duplicate each game's own text.
+	instruction_label.visible = false
 	_set_bar_color(COLOR_GREEN)
 	_running = true
 
 ## Set the one-line hint text shown below the timer bar.
 func set_instruction(text: String) -> void:
 	instruction_label.text    = text
-	instruction_label.visible = true
+	# Kept hidden during play (the GET READY flash already showed it).
+	instruction_label.visible = false
 
 ## Show a full-screen instruction flash before the timer starts.
 ## GameManager awaits this; it resolves after GET_READY_DURATION seconds.
