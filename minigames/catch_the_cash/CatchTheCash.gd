@@ -87,6 +87,9 @@ const FONT_PATH: String = "res://assets/Font/Kenney Future.ttf"
 ## Not delivered yet — loaded null-safely so the game never breaks.
 const SFX_GOOD_PATH: String = "res://minigames/catch_the_cash/assets/sfx_fpp_coin.wav"
 const SFX_BAD_PATH:  String = "res://minigames/catch_the_cash/assets/sfx_fpp_tax.wav"
+## Shared win/lose stings at the repo root, reused across the collection.
+const SFX_WIN_PATH:  String = "res://win v1.0.wav"
+const SFX_LOSE_PATH: String = "res://lose v1.0.wav"
 
 # ---------------------------------------------------------------------------
 # RUNTIME STATE
@@ -123,6 +126,8 @@ var _fall_speed_px: float = 360.0
 var _font: Font = null
 var _sfx_good: AudioStreamPlayer = null
 var _sfx_bad: AudioStreamPlayer = null
+var _sfx_win: AudioStreamPlayer = null
+var _sfx_lose: AudioStreamPlayer = null
 var _bg: ColorRect
 var _ground: ColorRect
 var _item_layer: Node2D
@@ -171,6 +176,10 @@ func setup() -> void:
 	_build_scene()
 	_apply_layout()
 	get_viewport().size_changed.connect(_apply_layout)
+
+	# Play a win/lose sting on every outcome (hub and solo alike).
+	game_won.connect(func() -> void: _play(_sfx_win))
+	game_lost.connect(func() -> void: _play(_sfx_lose))
 
 	# Start the round.
 	_balance = starting_balance
@@ -433,6 +442,7 @@ func _build_scene() -> void:
 	_title_label.name = "TitleLabel"
 	_title_label.text = "CATCH THE CASH  -  Faculty of Business & Accountancy"
 	_style_label(_title_label, 24, UM_GOLD, HORIZONTAL_ALIGNMENT_CENTER)
+	_title_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	add_child(_title_label)
 
 	_balance_label = Label.new()
@@ -467,6 +477,14 @@ func _build_scene() -> void:
 		_sfx_bad = AudioStreamPlayer.new()
 		_sfx_bad.stream = load(SFX_BAD_PATH) as AudioStream
 		add_child(_sfx_bad)
+	if ResourceLoader.exists(SFX_WIN_PATH):
+		_sfx_win = AudioStreamPlayer.new()
+		_sfx_win.stream = load(SFX_WIN_PATH) as AudioStream
+		add_child(_sfx_win)
+	if ResourceLoader.exists(SFX_LOSE_PATH):
+		_sfx_lose = AudioStreamPlayer.new()
+		_sfx_lose.stream = load(SFX_LOSE_PATH) as AudioStream
+		add_child(_sfx_lose)
 
 # ---------------------------------------------------------------------------
 # RESPONSIVE LAYOUT
