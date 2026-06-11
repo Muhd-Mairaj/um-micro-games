@@ -28,7 +28,7 @@ const GAMES: Array = [
 	{ "name": "Virus Scanner",          "faculty": "Medicine",                        "scene": "res://minigames/virus_scanner/VirusScanner.tscn" },
 	{ "name": "Lab Explosion",          "faculty": "Science",                         "scene": "res://minigames/lab_explosion/LabExplosion.tscn" },
 	{ "name": "Don't Get Caught",       "faculty": "Education",                       "scene": "res://minigames/phone_down/PhoneDown.tscn" },
-	{ "name": "False Start",            "faculty": "Sports & Exercise Sciences",      "scene": "res://minigames/hurdle_rush/HurdleRush.tscn" },
+	{ "name": "Hurdle Rush",            "faculty": "Sports & Exercise Sciences",      "scene": "res://minigames/hurdle_rush/HurdleRush.tscn" },
 	{ "name": "The Friday Slipper Hunt","faculty": "Academy of Islamic Studies (API)","scene": "res://minigames/friday_slipper_hunt/FridaySlipperHunt.tscn" },
 	{ "name": "Bas UM Model Crush",     "faculty": "Built Environment (FBE)",         "scene": "res://minigames/bas_um_model_crush/BasUmModelCrush.tscn" },
 	{ "name": "Order in the Court",     "faculty": "Law (FUU)",                       "scene": "res://minigames/order_in_the_court/OrderInTheCourt.tscn" },
