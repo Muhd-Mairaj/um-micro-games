@@ -104,6 +104,8 @@ const SFX_BANG_PATH: String = "res://minigames/order_in_the_court/assets/sfx_fuu
 const SFX_OBJECTION_PATH: String = "res://minigames/order_in_the_court/assets/sfx_fuu_objection.wav"
 const SFX_WIN_PATH:  String = "res://win v1.0.wav"
 const SFX_LOSE_PATH: String = "res://lose v1.0.wav"
+## This game's own looping background music (like the other games have).
+const BG_MUSIC_PATH: String = "res://minigames/order_in_the_court/assets/bg_fuu_music.wav"
 
 # ---------------------------------------------------------------------------
 # RUNTIME STATE
@@ -147,6 +149,7 @@ var _sfx: AudioStreamPlayer = null
 var _sfx_objection: AudioStreamPlayer = null
 var _sfx_win: AudioStreamPlayer = null
 var _sfx_lose: AudioStreamPlayer = null
+var _bg_music: AudioStreamPlayer = null
 var _bg: ColorRect
 var _wall: ColorRect
 var _judge: Node2D
@@ -669,6 +672,14 @@ func _build_scene() -> void:
 		_sfx_lose = AudioStreamPlayer.new()
 		_sfx_lose.stream = load(SFX_LOSE_PATH) as AudioStream
 		add_child(_sfx_lose)
+	# Looping background music (kept low so the gavel / objections cut through).
+	if ResourceLoader.exists(BG_MUSIC_PATH):
+		_bg_music = AudioStreamPlayer.new()
+		_bg_music.stream = load(BG_MUSIC_PATH) as AudioStream
+		_bg_music.volume_db = -14.0
+		_bg_music.finished.connect(func() -> void: _bg_music.play())
+		add_child(_bg_music)
+		_bg_music.play()
 
 func _build_judge_visual() -> void:
 	# Simple seated-judge placeholder: robe + head + a tiny gavel in hand.
