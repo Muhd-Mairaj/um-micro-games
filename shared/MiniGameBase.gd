@@ -57,7 +57,8 @@ signal game_lost
 # ---------------------------------------------------------------------------
 
 ## How long this mini-game lasts at normal speed (time_scale = 1.0).
-## Set this in your setup() method. Must be between 5.0 and 10.0 seconds.
+## Set this in your setup() method. Recommended range 5.0 to 15.0 seconds
+## (per README.md); several games use 12-15s.
 @export var base_duration: float = 10.0
 
 ## One-line hint shown in the HUD before the mini-game starts.

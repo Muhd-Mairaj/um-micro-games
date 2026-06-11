@@ -34,6 +34,18 @@ var found_liquids: Array = []
 var panel_original_size: Vector2
 var panel_original_pos: Vector2
 
+# ---------- RESPONSIVE LAYOUT ----------
+# Reference design resolution. All hardcoded .tscn positions/scales below were
+# authored against this size, so at 1280x720 the scale factor is exactly (1,1)
+# and every node stays pixel-identical to the original layout.
+const REFERENCE_SIZE: Vector2 = Vector2(1280, 720)
+
+# Cached design-space rects/transforms captured once from the .tscn so we can
+# re-derive responsive positions on every viewport resize without drift.
+var _bg_ref_pos: Vector2
+var _bg_ref_scale: Vector2
+var _button_ref_rects: Dictionary = {}   # node_path -> Rect2 (in reference space)
+
 # =============================================================================
 # MINIGAMEBASE CONTRACT
 # =============================================================================
@@ -46,6 +58,12 @@ func setup() -> void:
 
 	panel_original_size = recipe_panel.size
 	panel_original_pos  = recipe_panel.position
+
+	# Capture the original .tscn-authored layout (in 1280x720 reference space),
+	# apply it scaled to the current viewport, and keep it responsive on resize.
+	_cache_reference_layout()
+	_apply_responsive_layout()
+	get_viewport().size_changed.connect(_apply_responsive_layout)
 
 	# --- create audio players ---
 	win_sound = AudioStreamPlayer.new()
@@ -73,6 +91,44 @@ func setup() -> void:
 	correct_liquids = pool.slice(0, 4)
 
 	_start_memo_phase()
+
+# =============================================================================
+# RESPONSIVE LAYOUT
+# =============================================================================
+# Records the original 1280x720-authored transforms so positions can be derived
+# from get_viewport_rect().size on every resize. At 1280x720 this reproduces the
+# .tscn exactly (scale factor = 1,1).
+func _cache_reference_layout() -> void:
+	var bg = get_node_or_null("Background")
+	if bg:
+		_bg_ref_pos = bg.position
+		_bg_ref_scale = bg.scale
+
+	for liquid in liquid_names:
+		var btn := get_node_or_null("UI/" + liquid)
+		if btn:
+			_button_ref_rects[liquid] = Rect2(btn.position, btn.size)
+
+# Repositions/rescales the background sprite and the 9 liquid buttons to match
+# the current viewport, using REFERENCE_SIZE as the basis. Identity at 1280x720.
+func _apply_responsive_layout() -> void:
+	var viewport_size: Vector2 = get_viewport_rect().size
+	var factor: Vector2 = viewport_size / REFERENCE_SIZE
+
+	# --- Background sprite ---
+	var bg = get_node_or_null("Background")
+	if bg:
+		bg.position = _bg_ref_pos * factor
+		bg.scale = _bg_ref_scale * factor
+
+	# --- 9 liquid buttons (Control nodes in a CanvasLayer) ---
+	for liquid in _button_ref_rects.keys():
+		var btn := get_node_or_null("UI/" + liquid)
+		if btn == null:
+			continue
+		var ref_rect: Rect2 = _button_ref_rects[liquid]
+		btn.position = ref_rect.position * factor
+		btn.size = ref_rect.size * factor
 
 # =============================================================================
 # PROCESS — only needed to detect recall phase timeout now.
