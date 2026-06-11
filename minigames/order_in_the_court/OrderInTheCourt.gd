@@ -15,12 +15,15 @@
 #
 # HOW THIS HOOKS INTO THE SHARED FRAMEWORK (see shared/MiniGameBase.gd):
 #   - extends MiniGameBase and overrides setup() (NOT _ready()).
-#   - base_duration drives the shared HUD countdown bar via actual_duration().
-#   - We call win() / lose() — GameManager + HUD handle scoring/flash/transition.
-#   - The HUD auto-calls lose() the instant its timer hits zero, so a
-#     "survive the round" game must call win() a hair BEFORE that. We win at
-#     actual_duration() - END_SAFETY_MARGIN; the base _finished guard then makes
-#     the HUD's later lose() a harmless no-op.
+#   - base_duration drives the shared HUD countdown bar via actual_duration();
+#     this game adds NO timer of its own — the shared HUD owns the countdown.
+#   - This is a SURVIVAL game: running out of time means the player kept order,
+#     so it should WIN. GameManager calls lose() when the HUD timer runs out, so
+#     we override lose() to convert that timeout into win() UNLESS the chaos
+#     meter already maxed (a real MISTRIAL). Same pattern as PhoneDown, so the
+#     whole collection drives off the one shared HUD timer bar.
+#   - Standalone (F6) reuses the SAME shared HUD (shared/HUD.tscn) for its timer
+#     bar, so there is no second timer implementation anywhere.
 #   - The Stitcher registers this path in GameManager.gd in Week 12:
 #       "res://minigames/order_in_the_court/OrderInTheCourt.tscn",
 #
@@ -69,9 +72,6 @@ extends MiniGameBase
 # CONSTANTS
 # ---------------------------------------------------------------------------
 
-## Win slightly before the HUD timer would auto-lose us (see header note).
-const END_SAFETY_MARGIN: float = 0.25
-
 ## Number of bench slots a lawyer can pop up from.
 const N_SLOTS: int = 5
 
@@ -108,10 +108,15 @@ const SFX_BANG_PATH: String = "res://minigames/order_in_the_court/assets/sfx_fuu
 var _round_active: bool = false
 var _elapsed: float = 0.0
 var _round_len: float = 10.0
-var _win_at: float = 9.75
 var _spawn_timer: float = 0.4
 var _chaos: float = 0.0
 var _standalone: bool = false
+## True once the chaos meter maxes (a real MISTRIAL). Lets the lose() override
+## tell a genuine loss apart from a survival timeout (which is a WIN).
+var _mistrial_triggered: bool = false
+## Standalone (F6) only: an instance of the shared HUD so solo runs use the same
+## timer bar as the hub instead of a home-grown one.
+var _solo_hud: CanvasLayer = null
 
 ## One entry per live lawyer: { "node": Area2D, "slot": int, "time_up": float,
 ## "alive": bool }.
@@ -143,7 +148,6 @@ var _bench: Node2D
 var _meter_bg: ColorRect
 var _meter_fill: ColorRect
 var _meter_label: Label
-var _countdown_label: Label
 var _title_label: Label
 var _result_label: Label
 var _retry_button: Button
@@ -163,11 +167,12 @@ func setup() -> void:
 	max_chaos = maxf(max_chaos, 1.0)
 
 	# Round bookkeeping (actual_duration() already accounts for time_scale).
+	# Used only to pace the spawn ramp — the shared HUD owns the countdown.
 	_round_len = max(actual_duration(), 1.0)
-	_win_at = max(_round_len - END_SAFETY_MARGIN, _round_len * 0.6)
 
-	# Are we running on our own via F6 (no GameManager / HUD)? If so we offer a
-	# retry button; in the hub GameManager owns transitions and we never reload.
+	# Are we running on our own via F6 (no GameManager / HUD)? If so we spin up
+	# the shared HUD ourselves and offer a retry; in the hub GameManager owns the
+	# HUD and transitions and we never reload.
 	_standalone = get_tree().current_scene == self
 
 	# Make Area2D taps work for both mouse and touch regardless of project defaults.
@@ -187,9 +192,14 @@ func setup() -> void:
 	_chaos = 0.0
 	_elapsed = 0.0
 	_spawn_timer = 0.4
+	_mistrial_triggered = false
 	_round_active = true
 	_update_chaos_meter()
-	_update_countdown()
+
+	# Standalone testing: reuse the real shared HUD so even F6 runs off the one
+	# timer bar. Its countdown running out is our survival WIN (via lose()).
+	if _standalone:
+		_start_solo_hud()
 
 func _process(delta: float) -> void:
 	if _finished or not _round_active:
@@ -221,18 +231,27 @@ func _process(delta: float) -> void:
 	_chaos = clampf(_chaos, 0.0, max_chaos)
 
 	_update_chaos_meter()
-	_update_countdown()
 
-	# --- outcomes: check the loss (meter maxed) before the survival win ---
+	# --- loss check: the meter maxing out is a MISTRIAL. The survival WIN is
+	# driven by the shared HUD timer running out (see the lose() override). ---
 	if _chaos >= max_chaos:
 		_mistrial()
-		return
-	if _elapsed >= _win_at:
-		_case_won()
 
 # ---------------------------------------------------------------------------
 # OUTCOMES
 # ---------------------------------------------------------------------------
+
+## SURVIVAL override: the player wins by outlasting the shared HUD timer.
+## GameManager calls lose() the instant that timer runs out, so we convert a
+## timeout into a win — UNLESS the chaos meter already maxed (a real MISTRIAL).
+## (Same approach as PhoneDown; keeps the whole game on the shared timer bar.)
+func lose() -> void:
+	if _finished:
+		return
+	if _mistrial_triggered:
+		super.lose()   # genuine loss — let the base class emit game_lost.
+	else:
+		_case_won()    # timer ran out with order kept — the player WINS.
 
 func _case_won() -> void:
 	if _finished:
@@ -240,17 +259,41 @@ func _case_won() -> void:
 	_round_active = false
 	_freeze_lawyers()
 	_show_result("CASE WON!", UM_GOLD)
+	if _solo_hud != null:
+		_solo_hud.show_result(true)
 	win()   # GameManager + HUD take over from here.
 
 func _mistrial() -> void:
 	if _finished:
 		return
+	_mistrial_triggered = true
 	_round_active = false
 	_chaos = max_chaos
 	_update_chaos_meter()
 	_freeze_lawyers()
 	_show_result("MISTRIAL!", CHAOS_HIGH)
-	lose()  # GameManager + HUD take over from here.
+	if _solo_hud != null:
+		_solo_hud.show_result(false)
+	lose()  # -> override -> super.lose(); GameManager + HUD take over from here.
+
+# ---------------------------------------------------------------------------
+# STANDALONE SHARED-HUD HARNESS (F6 only) — reuse shared/HUD.tscn so solo runs
+# use the exact same timer bar as the hub (no second timer implementation).
+# ---------------------------------------------------------------------------
+
+func _start_solo_hud() -> void:
+	var hud_scene: PackedScene = load("res://shared/HUD.tscn")
+	if hud_scene == null:
+		return
+	_solo_hud = hud_scene.instantiate()
+	add_child(_solo_hud)
+	_solo_hud.update_lives(3)
+	_solo_hud.update_progress(0, 1)
+	_solo_hud.set_instruction(instruction_text)
+	_solo_hud.start(actual_duration())
+	# Mirror GameManager: the HUD timer running out calls lose() (which our
+	# override turns into the survival win).
+	_solo_hud.timed_out.connect(func() -> void: lose())
 
 func _show_result(text: String, color: Color) -> void:
 	_result_label.text = text
@@ -479,12 +522,15 @@ func _restart_round() -> void:
 	_chaos = 0.0
 	_elapsed = 0.0
 	_spawn_timer = 0.4
+	_mistrial_triggered = false
 	_result_label.visible = false
 	_retry_button.visible = false
 	_apply_layout()
 	_update_chaos_meter()
-	_update_countdown()
 	_round_active = true
+	# Restart the shared HUD timer for the new attempt.
+	if _solo_hud != null:
+		_solo_hud.start(actual_duration())
 
 # ---------------------------------------------------------------------------
 # HUD-ON-SCREEN: chaos meter + countdown
@@ -503,10 +549,6 @@ func _update_chaos_meter() -> void:
 		c = CHAOS_MID.lerp(CHAOS_HIGH, (frac - 0.5) / 0.5)
 	_meter_fill.color = c
 	_meter_label.text = "CHAOS %d%%" % int(round(frac * 100.0))
-
-func _update_countdown() -> void:
-	var remaining: float = clampf(_round_len - _elapsed, 0.0, _round_len)
-	_countdown_label.text = "ADJOURN IN %.1fs" % remaining
 
 func _current_spawn_interval() -> float:
 	var t: float = clampf(_elapsed / _round_len, 0.0, 1.0)
@@ -578,11 +620,6 @@ func _build_scene() -> void:
 	_title_label.text = "ORDER IN THE COURT  -  Faculty of Law"
 	_style_label(_title_label, 24, UM_GOLD, HORIZONTAL_ALIGNMENT_CENTER)
 	add_child(_title_label)
-
-	_countdown_label = Label.new()
-	_countdown_label.name = "CountdownLabel"
-	_style_label(_countdown_label, 20, WHITE, HORIZONTAL_ALIGNMENT_LEFT)
-	add_child(_countdown_label)
 
 	# Verdict banner (hidden until the round ends).
 	_result_label = Label.new()
@@ -692,8 +729,6 @@ func _apply_layout() -> void:
 	var top_safe: float = _vp.y * 0.16
 	_title_label.position = Vector2(_vp.x * 0.5 - _vp.x * 0.4, top_safe)
 	_title_label.size = Vector2(_vp.x * 0.8, _vp.y * 0.06)
-	_countdown_label.position = Vector2(_vp.x * 0.04, top_safe + _vp.y * 0.06)
-	_countdown_label.size = Vector2(_vp.x * 0.4, _vp.y * 0.05)
 
 	# Verdict banner centred in the play area (above the HUD's centre flash).
 	_result_label.position = Vector2(_vp.x * 0.5 - _vp.x * 0.45, _vp.y * 0.30)
