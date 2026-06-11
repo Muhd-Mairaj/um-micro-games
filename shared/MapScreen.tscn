@@ -1,0 +1,64 @@
+[gd_scene load_steps=2 format=3 uid="uid://b8mapscreen01x"]
+
+[ext_resource type="Script" path="res://shared/MapScreen.gd" id="1_map"]
+
+[node name="MapScreen" type="CanvasLayer"]
+layer = 5
+script = ExtResource("1_map")
+
+[node name="Bg" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.05, 0.06, 0.12, 1)
+
+[node name="Margin" type="MarginContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 48
+theme_override_constants/margin_top = 18
+theme_override_constants/margin_right = 48
+theme_override_constants/margin_bottom = 18
+
+[node name="VBox" type="VBoxContainer" parent="Margin"]
+layout_mode = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="Title" type="Label" parent="Margin/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 34
+text = "CHOOSE A FACULTY"
+horizontal_alignment = 1
+
+[node name="Lives" type="Label" parent="Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.42, 0.46, 1)
+theme_override_font_sizes/font_size = 30
+text = "♥ ♥ ♥"
+horizontal_alignment = 1
+
+[node name="Progress" type="Label" parent="Margin/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "0 / 12 faculties cleared  -  clear all 12 to graduate!"
+horizontal_alignment = 1
+
+[node name="Grid" type="GridContainer" parent="Margin/VBox"]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_constants/h_separation = 14
+theme_override_constants/v_separation = 12
+columns = 4
+
+[node name="TestButton" type="Button" parent="Margin/VBox"]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_font_sizes/font_size = 18
+text = "TEST: skip to Graduation (imitate winning all 12)"
